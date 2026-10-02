@@ -8,3 +8,6 @@ Build/
 *.sln
 *.VC.db
 *.opendb
+
+# アセットの除外
+Content/
