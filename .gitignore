@@ -1,0 +1,10 @@
+# Unreal Engine 公式の標準除外リスト
+Binaries/
+Intermediate/
+Saved/
+DerivedDataCache/
+Build/
+.vs/
+*.sln
+*.VC.db
+*.opendb
