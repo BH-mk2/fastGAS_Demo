@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "CombatCharacterBase.h"
-#include "CombatCharacterBase.h"
 #include "InputActionValue.h"
+#include "CombatGameplayAbility.h"
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -34,6 +34,9 @@ protected:
 	/* 視点操作入力ハンドラ */
 	void Look(const FInputActionValue& Value);
 
+	/* 回避入力ハンドラ */
+	void Dodge();
+
 protected:
 	/* カメラブーム */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
@@ -54,4 +57,12 @@ protected:
 	/* 視点用 InputAction (IA_Look) */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
 	UInputAction* LookAction;
+
+	/* 回避用 InputAction (IA_Dodge) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
+	UInputAction* DodgeAction;
+
+	/* 回避アビリティ */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
+	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
 };

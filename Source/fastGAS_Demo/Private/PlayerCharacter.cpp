@@ -70,6 +70,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		return;
 
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Look);
+
+	if (!DodgeAction)
+		return;
+
+	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &APlayerCharacter::Dodge);
+
+	if (!DodgeAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -104,4 +114,15 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 
 	AddControllerYawInput(LookAxisVector.X);
 	AddControllerPitchInput(LookAxisVector.Y);
+}
+
+void APlayerCharacter::Dodge()
+{
+	if (!AbilitySystemComponent)
+		return;
+
+	if (!DodgeAbilityClass)
+		return;
+
+	AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
 }
