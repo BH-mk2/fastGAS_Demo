@@ -6,7 +6,6 @@
 #include "CombatCharacterBase.h"
 #include "InputActionValue.h"
 #include "CombatGameplayAbility.h"
-#include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
