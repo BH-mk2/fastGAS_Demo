@@ -17,7 +17,7 @@ public:
 	// Sets default values for this character's properties
 	ACombatCharacterBase();
 
-	virtual FVector GetDesiredMoveDirection() const {unimplemented();return FVector::ZeroVector;}
+	virtual FVector GetDesiredMoveDirection() const {ensureAlways(false);return FVector::ZeroVector;}
 
 protected:
 	// Called when the game starts or when spawned
