@@ -73,6 +73,7 @@ classDiagram
     GE_Damage --> UCombatDamageExecutionCalculation
 
     class UCombatGameplayAbility{
+        +ACombatCharacterBase* GetCombatCharacter()
     }
     UGameplayAbility --|> UCombatGameplayAbility
 
