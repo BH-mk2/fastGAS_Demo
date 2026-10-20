@@ -34,6 +34,41 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // アームに対して固定
 }
 
+FVector APlayerCharacter::GetDesiredMoveDirection()const
+{
+	FVector Ret = FVector::ZeroVector;
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC)
+		return Ret;
+
+	UEnhancedPlayerInput* EPI = Cast<UEnhancedPlayerInput>(PC->PlayerInput);
+	if (!EPI)
+		return Ret;
+
+	const FVector2D MoveInput = EPI->GetActionValue(MoveAction).Get<FVector2D>();
+	if (MoveInput.IsNearlyZero())
+		return Ret;
+
+	// カメラの向きを取得
+	const FRotator ControlRot = PC->GetControlRotation();
+	const FRotator YawRot(0.0f, ControlRot.Yaw, 0.0f);
+
+	// カメラの正面と左の向きを算出
+	const FRotationMatrix RotationMatrix(YawRot);
+	const FVector ForwardDir = RotationMatrix.GetUnitAxis(EAxis::X);
+	const FVector RightDir = RotationMatrix.GetUnitAxis(EAxis::Y);
+
+	// カメラの向きに移動入力を足し合わせた向きを算出
+	Ret = ForwardDir * MoveInput.Y // 前後
+		+ RightDir * MoveInput.X; // 左右
+
+
+	Ret = Ret.GetSafeNormal();
+
+	return Ret;
+}
+
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();

@@ -6,6 +6,7 @@
 #include "CombatCharacterBase.h"
 #include "InputActionValue.h"
 #include "CombatGameplayAbility.h"
+#include "CombatInterface.h"
 #include "PlayerCharacter.generated.h"
 
 class USpringArmComponent;
@@ -17,12 +18,14 @@ class UInputAction;
  * 
  */
 UCLASS()
-class FASTGAS_DEMO_API APlayerCharacter : public ACombatCharacterBase
+class FASTGAS_DEMO_API APlayerCharacter : public ACombatCharacterBase, public ICombatInterface
 {
 	GENERATED_BODY()
 	
 public:
 	APlayerCharacter();
+
+	virtual FVector GetDesiredMoveDirection() const override;
 
 protected:
 	virtual void BeginPlay() override;
