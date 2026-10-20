@@ -4,17 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "CombatInterface.h"
 #include "AbilitySystemComponent.h"
 #include "CombatCharacterBase.generated.h"
 
 UCLASS()
-class FASTGAS_DEMO_API ACombatCharacterBase : public ACharacter
+class FASTGAS_DEMO_API ACombatCharacterBase : public ACharacter, public ICombatInterface
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ACombatCharacterBase();
+
+	virtual FVector GetDesiredMoveDirection() const {unimplemented();return FVector::ZeroVector;}
 
 protected:
 	// Called when the game starts or when spawned
