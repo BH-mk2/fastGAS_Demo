@@ -18,7 +18,7 @@ class UInputAction;
  * 
  */
 UCLASS()
-class FASTGAS_DEMO_API APlayerCharacter : public ACombatCharacterBase, public ICombatInterface
+class FASTGAS_DEMO_API APlayerCharacter final : public ACombatCharacterBase
 {
 	GENERATED_BODY()
 	

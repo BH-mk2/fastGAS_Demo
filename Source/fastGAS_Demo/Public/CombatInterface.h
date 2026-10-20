@@ -22,6 +22,5 @@ class FASTGAS_DEMO_API ICombatInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	// 移動入力を取得する
-	virtual FVector GetDesiredMoveDirection() const = 0;
+
 };
