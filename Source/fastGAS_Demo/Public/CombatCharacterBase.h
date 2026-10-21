@@ -8,6 +8,8 @@
 #include "AbilitySystemComponent.h"
 #include "CombatCharacterBase.generated.h"
 
+class UCombatAttributeSet;
+
 UCLASS()
 class FASTGAS_DEMO_API ACombatCharacterBase : public ACharacter, public ICombatInterface
 {
@@ -37,4 +39,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GAS")
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS")
+	TObjectPtr<UCombatAttributeSet> AttributeSet;
+
+	// 初期ステータスを設定するGEのクラス
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
+	TSubclassOf<class UGameplayEffect> DefaultAttricutesEffect;
+
+	virtual void InitializeDefaultAttributes();
 };

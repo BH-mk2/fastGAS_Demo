@@ -2,6 +2,7 @@
 
 
 #include "CombatCharacterBase.h"
+#include "CombatAttributeSet.h"
 
 // Sets default values
 ACombatCharacterBase::ACombatCharacterBase()
@@ -10,6 +11,8 @@ ACombatCharacterBase::ACombatCharacterBase()
 	PrimaryActorTick.bCanEverTick = true;
 
 	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+
+	AttributeSet = CreateDefaultSubobject<UCombatAttributeSet>(TEXT("AttributeSet"));
 }
 
 // Called when the game starts or when spawned
@@ -27,6 +30,7 @@ void ACombatCharacterBase::PossessedBy(AController* NewController)
 		return;
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
+	InitializeDefaultAttributes();
 }
 
 // Called every frame
@@ -43,3 +47,21 @@ void ACombatCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 }
 
+void ACombatCharacterBase::InitializeDefaultAttributes()
+{
+	if (!AbilitySystemComponent)
+		return;
+
+	if (!DefaultAttricutesEffect)
+		return;
+
+	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
+	EffectContext.AddSourceObject(this);
+
+	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttricutesEffect, 1.0f, EffectContext);
+
+	if (SpecHandle.IsValid())
+	{
+		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+	}
+}
