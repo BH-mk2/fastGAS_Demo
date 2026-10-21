@@ -9,6 +9,7 @@
 #include "CombatCharacterBase.generated.h"
 
 class UCombatAttributeSet;
+class AWeaponBase;
 
 UCLASS()
 class FASTGAS_DEMO_API ACombatCharacterBase : public ACharacter, public ICombatInterface
@@ -46,5 +47,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<class UGameplayEffect> DefaultAttricutesEffect;
 
+	// 武器クラス
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
+	TSubclassOf<class AWeaponBase> WeaponClass;
+
+	// 生成後の武器
+	TObjectPtr<AWeaponBase> Weapon;
+
+	// 武器をアタッチするソケット名
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
+	FName WeaponAttachToSocketName;
+
+	// 初期ステータスを設定する関数
 	virtual void InitializeDefaultAttributes();
 };

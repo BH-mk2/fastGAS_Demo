@@ -3,6 +3,7 @@
 
 #include "CombatCharacterBase.h"
 #include "CombatAttributeSet.h"
+#include "WeaponBase.h"
 
 // Sets default values
 ACombatCharacterBase::ACombatCharacterBase()
@@ -20,6 +21,14 @@ void ACombatCharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (!WeaponClass)
+	{
+		ensure(WeaponClass!=nullptr);
+		return;
+	}
+
+	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachToSocketName);
 }
 
 void ACombatCharacterBase::PossessedBy(AController* NewController)
