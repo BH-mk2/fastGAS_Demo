@@ -28,6 +28,10 @@ protected:
 
 	virtual void PossessedBy(AController* NewController);
 
+	virtual bool GetAttackPoints(FVector& OutStart, FVector& OutEnd)const override { ensureAlways(false);  return false; }
+	virtual void ResetHitActors() override;
+	virtual bool AddHitActor(TWeakObjectPtr<AActor> HitActor) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -60,4 +64,8 @@ protected:
 
 	// 初期ステータスを設定する関数
 	virtual void InitializeDefaultAttributes();
+
+private:
+	// 衝突判定用のヒット済みActorリスト
+	TArray<TWeakObjectPtr<AActor>> HitActors;
 };

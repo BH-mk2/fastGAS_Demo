@@ -42,6 +42,27 @@ void ACombatCharacterBase::PossessedBy(AController* NewController)
 	InitializeDefaultAttributes();
 }
 
+void ACombatCharacterBase::ResetHitActors()
+{
+	HitActors.Reset();
+}
+
+bool ACombatCharacterBase::AddHitActor(TWeakObjectPtr<AActor> HitActor)
+{
+	if (!HitActor.IsValid())
+	{
+		return false;
+	}
+	if (HitActors.Contains(HitActor))
+	{
+		return false;
+	}
+
+	HitActors.Add(HitActor);
+
+	return true;
+}
+
 // Called every frame
 void ACombatCharacterBase::Tick(float DeltaTime)
 {
