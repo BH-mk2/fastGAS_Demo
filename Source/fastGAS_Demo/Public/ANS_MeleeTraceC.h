@@ -5,6 +5,7 @@
 #include <vector>
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "GameplayEffect.h"
 #include "ANS_MeleeTraceC.generated.h"
 
 /**
@@ -22,5 +23,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Collision", meta = (ClampMin = "0"))
 	float Radius = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
+	TSubclassOf<UGameplayEffect> DamageEffect;
 private:
 };
