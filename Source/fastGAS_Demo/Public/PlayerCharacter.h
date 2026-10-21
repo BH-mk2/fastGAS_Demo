@@ -30,6 +30,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual bool GetAttackPoints(FVector& OutStart, FVector& OutEnd)const override;
+
 	/* 移動入力ハンドラ */
 	void Move(const FInputActionValue& Value);
 
@@ -38,6 +40,9 @@ protected:
 
 	/* 回避入力ハンドラ */
 	void Dodge();
+
+	/* 攻撃入力ハンドラ */
+	void Attack();
 
 protected:
 	/* カメラブーム */
@@ -64,7 +69,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
 	UInputAction* DodgeAction;
 
+	/* 攻撃用 InputAction (IA_Attack) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
+	UInputAction* AttackAction;
+
 	/* 回避アビリティ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
+
+	/* 攻撃アビリティ */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
+
 };

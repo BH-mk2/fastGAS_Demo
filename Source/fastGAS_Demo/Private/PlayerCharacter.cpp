@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
+#include "WeaponBase.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -111,10 +112,34 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &APlayerCharacter::Dodge);
 
+	if (!AttackAction)
+		return;
+
+	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::Attack);
+
 	if (!DodgeAbilityClass)
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
+
+	if (!AttackAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
+}
+
+bool APlayerCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
+{
+	if (!Weapon)
+		return false;
+	auto WeaponMesh = Weapon->GetWeaponMesh();
+	if (!WeaponMesh)
+		return false;
+
+	OutStart = WeaponMesh->GetSocketLocation("WeaponStart");
+	OutEnd = WeaponMesh->GetSocketLocation("WeaponEnd");
+
+	return true;
 }
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
@@ -160,4 +185,15 @@ void APlayerCharacter::Dodge()
 		return;
 
 	AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+}
+
+void APlayerCharacter::Attack()
+{
+	if (!AbilitySystemComponent)
+		return;
+
+	if (!AttackAbilityClass)
+		return;
+
+	AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
 }
