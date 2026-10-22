@@ -37,8 +37,6 @@
 
 classDiagram
     class ACombatCharacterBase{
-        -int comboIndex
-        -int comboIndexMax
     }
     ACharacter --|> ACombatCharacterBase
     ICombatInterface --|> ACombatCharacterBase
@@ -78,6 +76,8 @@ classDiagram
     UGameplayAbility --|> UCombatGameplayAbility
 
     class GA_Attack{
+        -int comboIndex
+        -int comboIndexMax
     }
     UCombatGameplayAbility --|> GA_Attack
     class GA_Guard{
