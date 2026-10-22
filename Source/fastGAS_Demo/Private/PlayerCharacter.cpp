@@ -8,6 +8,10 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubSystems.h"
 #include "WeaponBase.h"
+#include "CombatGameplayTags.h"
+#include "AbilitySystemBlueprintLibrary.h"
+
+#include "Kismet/KismetSystemLibrary.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -184,7 +188,17 @@ void APlayerCharacter::Dodge()
 	if (!DodgeAbilityClass)
 		return;
 
-	AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action))
+	{
+		if (!AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_Cancellable_Dodge))
+		{
+			UKismetSystemLibrary::PrintString(this, TEXT("[APlayerCharacter] Block Dodge"));
+			return;
+		}
+	}
+
+	const bool Result = AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+	UE_LOG(LogTemp, Warning, TEXT("TryDodgeResult: %d"), Result);
 }
 
 void APlayerCharacter::Attack()
@@ -195,5 +209,15 @@ void APlayerCharacter::Attack()
 	if (!AttackAbilityClass)
 		return;
 
-	AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
+	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack))
+	{
+		// コンボ入力
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Attack, FGameplayEventData{});
+	}
+	else
+	{
+		// 攻撃(ひと振り目)
+		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
+	}
+
 }
