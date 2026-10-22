@@ -22,6 +22,12 @@ public:
 	UFUNCTION()
 	void OnMontageEnded();
 
+	UFUNCTION()
+	void OnComboEventReceived(FGameplayEventData payload);
+
+	UFUNCTION()
+	void OnEvaluateBufferEventReceived(FGameplayEventData payload);
+
 	// 攻撃用アニメーション
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	UAnimMontage* AttackMontage;
@@ -29,4 +35,14 @@ public:
 	// アニメーション再生速度
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	float PlayRate = 1.0f;
+
+	// 最大コンボ数
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combo")
+	TArray<FName> ComboSectionNames;
+
+private:
+	void ProcessNextCombo(UAbilitySystemComponent& ASC);
+private:
+	int32 ComboIndex = 0;
+	bool bComboBuffer = false;
 };
