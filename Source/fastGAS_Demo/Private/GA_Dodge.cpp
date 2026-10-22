@@ -7,6 +7,8 @@
 #include "CombatCharacterBase.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 void UGA_Dodge::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -62,12 +64,14 @@ void UGA_Dodge::ActivateAbility(
 	MontageTask->OnCompleted.AddDynamic(this, &UGA_Dodge::OnMontageEnded);
 	MontageTask->OnInterrupted.AddDynamic(this, &UGA_Dodge::OnMontageEnded);
 	MontageTask->OnCancelled.AddDynamic(this, &UGA_Dodge::OnMontageEnded);
+	MontageTask->OnBlendOut.AddDynamic(this, &UGA_Dodge::OnMontageEnded);
 
 	MontageTask->ReadyForActivation();
 }
 
 void UGA_Dodge::OnMontageEnded()
 {
+	UE_LOG(LogTemp, Warning, TEXT("[UGA_Dodge] OnMontageEnded Called!"));
 	if (ACombatCharacterBase* Character = GetCombatCharacter())
 	{
 		Character->bUseControllerRotationYaw = true;
