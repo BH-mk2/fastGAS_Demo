@@ -5,6 +5,8 @@
 #include "CombatInterface.h"
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "CombatGameplayTags.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 
 void UANS_MeleeTraceC::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
@@ -83,6 +85,8 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 				UE_LOG(LogTemp, Warning, TEXT("[ANS_MeleeTrace] Failed to MakeOutgoingSpec"));
 				return;
 			}
+			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health, DamageHealthMagnitude);
+			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, DamagePostureMagnitude);
 			SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
 		}
 	}

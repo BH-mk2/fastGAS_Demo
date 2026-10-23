@@ -26,5 +26,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<UGameplayEffect> DamageEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
+	float DamageHealthMagnitude = -20.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	float DamagePostureMagnitude = 20.0f;
 private:
 };
