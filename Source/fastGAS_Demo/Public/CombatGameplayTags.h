@@ -17,4 +17,8 @@ namespace CombatGameplayTags
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Combat_Cancellable_Attack);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Combat_Cancellable_Dodge);
+
+	// データ用
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_DATA_Damage_Health);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_DATA_Damage_Posture);
 }
