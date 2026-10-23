@@ -121,6 +121,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &APlayerCharacter::Attack);
 
+	if (!GuardAction)
+		return;
+
+	EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Guard);
+
 	if (!DodgeAbilityClass)
 		return;
 
@@ -130,6 +135,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
+
+	if (!GuardAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1));
 }
 
 bool APlayerCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
@@ -220,4 +230,26 @@ void APlayerCharacter::Attack()
 		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
 	}
 
+}
+
+void APlayerCharacter::Guard(const FInputActionValue& Value)
+{
+	const bool Pressed = Value.Get<bool>();
+
+	if (!AbilitySystemComponent)
+		return;
+
+	if (!GuardAbilityClass)
+		return;
+
+	// 押したとき
+	if (Pressed)
+	{
+		AbilitySystemComponent->TryActivateAbilityByClass(GuardAbilityClass);
+	}
+	else
+	{
+		// 離したとき
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_GuardEnd, FGameplayEventData{});
+	}
 }

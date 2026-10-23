@@ -44,6 +44,9 @@ protected:
 	/* 攻撃入力ハンドラ */
 	void Attack();
 
+	/* ガード入力ハンドラ */
+	void Guard(const FInputActionValue& Value);
+
 protected:
 	/* カメラブーム */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
@@ -73,6 +76,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
 	UInputAction* AttackAction;
 
+	/* 防御用 InputAction (IA_Guard) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
+	UInputAction* GuardAction;
+
 	/* 回避アビリティ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
@@ -80,5 +87,9 @@ protected:
 	/* 攻撃アビリティ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
+
+	/* 防御アビリティ */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
 
 };
