@@ -8,13 +8,13 @@
 #include "CombatGameplayAbility.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class FASTGAS_DEMO_API UCombatGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
-	
+
 public:
-	ACombatCharacterBase* GetCombatCharacter();
+	ACombatCharacterBase *GetCombatCharacter();
 };
