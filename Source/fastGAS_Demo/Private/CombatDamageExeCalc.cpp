@@ -43,7 +43,7 @@ void UCombatDamageExeCalc::Execute_Implementation(
 	if (!bIsFront)
 	{
 		// 直撃
-		HitDirect(OutExecutionOutput);
+		HitDirect(ExecutionParams, OutExecutionOutput);
 		return;
 	}
 	// 正面から攻撃したとき
@@ -61,34 +61,54 @@ void UCombatDamageExeCalc::Execute_Implementation(
 		{
 			// 防御側の体幹を減らす
 			UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit was Guarded"));
+
+			const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+			const float DamageHealth = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health);
+			const float DamagePosture = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture);
+
 			OutExecutionOutput.AddOutputModifier(
 				FGameplayModifierEvaluatedData(
 					UCombatAttributeSet::GetPostureAttribute(),
 					EGameplayModOp::Additive,
-					10.0f
+					DamagePosture * GuardDamagePostureRate
 				)
 			);
 		}
 		else
 		{
 			// 直撃
-			HitDirect(OutExecutionOutput);
+			HitDirect(ExecutionParams, OutExecutionOutput);
 		}
 
 		return;
 	}
 }
 
-void UCombatDamageExeCalc::HitDirect(FGameplayEffectCustomExecutionOutput& OutExecutionOutput)const
+void UCombatDamageExeCalc::HitDirect(
+	const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
+	FGameplayEffectCustomExecutionOutput& OutExecutionOutput
+)const
 {
 	UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit Direct"));
+
+	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+	const float DamageHealth = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health);
+	const float DamagePosture= Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture);
 
 	// 防御側の体力を減らす
 	OutExecutionOutput.AddOutputModifier(
 		FGameplayModifierEvaluatedData(
 			UCombatAttributeSet::GetHealthAttribute(),
 			EGameplayModOp::Additive,
-			-20.0f
+			DamageHealth
+		)
+	);
+	// 防御側の体幹を増やす
+	OutExecutionOutput.AddOutputModifier(
+		FGameplayModifierEvaluatedData(
+			UCombatAttributeSet::GetPostureAttribute(),
+			EGameplayModOp::Additive,
+			DamagePosture
 		)
 	);
 }

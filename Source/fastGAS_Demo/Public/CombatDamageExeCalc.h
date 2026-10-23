@@ -24,5 +24,11 @@ public:
 
 private:
 	// 直撃時の処理
-	void HitDirect(FGameplayEffectCustomExecutionOutput& OutExecutionOutput)const;
+	void HitDirect(
+		const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
+		FGameplayEffectCustomExecutionOutput& OutExecutionOutput
+	)const;
+
+	// 相手がガードした時の体幹増加率
+	const float GuardDamagePostureRate = 0.5f;
 };
