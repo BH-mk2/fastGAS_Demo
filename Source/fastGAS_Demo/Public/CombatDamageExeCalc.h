@@ -24,5 +24,5 @@ public:
 
 private:
 	// 直撃時の処理
-	void HitDirect()const;
+	void HitDirect(FGameplayEffectCustomExecutionOutput& OutExecutionOutput)const;
 };

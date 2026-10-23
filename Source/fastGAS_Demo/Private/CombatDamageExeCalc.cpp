@@ -4,6 +4,7 @@
 #include "CombatDamageExeCalc.h"
 #include "AbilitySystemComponent.h"
 #include "CombatGameplayTags.h"
+#include "CombatAttributeSet.h"
 
 UCombatDamageExeCalc::UCombatDamageExeCalc()
 {
@@ -42,7 +43,7 @@ void UCombatDamageExeCalc::Execute_Implementation(
 	if (!bIsFront)
 	{
 		// 直撃
-		HitDirect();
+		HitDirect(OutExecutionOutput);
 		return;
 	}
 	// 正面から攻撃したとき
@@ -58,20 +59,36 @@ void UCombatDamageExeCalc::Execute_Implementation(
 		}
 		else if (bIsGuarding)
 		{
+			// 防御側の体幹を減らす
 			UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit was Guarded"));
-
+			OutExecutionOutput.AddOutputModifier(
+				FGameplayModifierEvaluatedData(
+					UCombatAttributeSet::GetPostureAttribute(),
+					EGameplayModOp::Additive,
+					10.0f
+				)
+			);
 		}
 		else
 		{
 			// 直撃
-			HitDirect();
+			HitDirect(OutExecutionOutput);
 		}
 
 		return;
 	}
 }
 
-void UCombatDamageExeCalc::HitDirect()const
+void UCombatDamageExeCalc::HitDirect(FGameplayEffectCustomExecutionOutput& OutExecutionOutput)const
 {
 	UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit Direct"));
+
+	// 防御側の体力を減らす
+	OutExecutionOutput.AddOutputModifier(
+		FGameplayModifierEvaluatedData(
+			UCombatAttributeSet::GetHealthAttribute(),
+			EGameplayModOp::Additive,
+			-20.0f
+		)
+	);
 }
