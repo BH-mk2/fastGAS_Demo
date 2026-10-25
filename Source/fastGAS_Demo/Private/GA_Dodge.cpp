@@ -44,6 +44,7 @@ void UGA_Dodge::ActivateAbility(
 
 	if (!DesiredDir.IsNearlyZero())
 	{
+		Character->bUseControllerRotationYaw = false;
 		Character->SetActorRotation(DesiredDir.Rotation());
 	}
 
