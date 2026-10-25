@@ -13,6 +13,8 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Parry, "State.Action.Parry");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Dodge, "State.Action.Dodge");
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_LockedOn, "State.Combat.LockedOn");
+
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_Cancellable_Attack, "State.Combat.Cancellable.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_Cancellable_Dodge, "State.Combat.Cancellable.Dodge");
 
