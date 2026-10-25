@@ -80,17 +80,21 @@ void UCombatDamageExeCalc::Execute_Implementation(
 		}
 		else if (bIsGuarding)
 		{
-			// 防御側の体幹を減らす
+			// 防御側の体幹を増やす
 			UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit was Guarded"));
 
 			const float DamageHealth = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health);
 			const float DamagePosture = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture);
+			const float ApplyDamagePosture = DamagePosture * GuardDamagePostureRate;
+
+			auto Attributes = TargetASC->GetSet<UCombatAttributeSet>();
+			const float CurrentPosture = Attributes->GetPosture();
 
 			OutExecutionOutput.AddOutputModifier(
 				FGameplayModifierEvaluatedData(
 					UCombatAttributeSet::GetPostureAttribute(),
 					EGameplayModOp::Additive,
-					DamagePosture * GuardDamagePostureRate
+					ApplyDamagePosture
 				)
 			);
 
@@ -98,6 +102,15 @@ void UCombatDamageExeCalc::Execute_Implementation(
 				FGameplayCueParameters CueParams;
 				CueParams.Location = ImpactLocation;
 				TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Guard, CueParams);
+			}
+
+			// 体幹が最大値になっていたら体幹崩れの処理をする
+			if (!TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered))
+			{
+				if ((CurrentPosture + ApplyDamagePosture) >= Attributes->GetMaxPosture())
+				{
+					TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
+				}
 			}
 		}
 		else
@@ -122,6 +135,13 @@ void UCombatDamageExeCalc::HitDirect(
 	const float DamageHealth = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health);
 	const float DamagePosture= Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture);
 
+	UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent();
+	if (!TargetASC)
+		return;
+
+	auto Attributes = TargetASC->GetSet<UCombatAttributeSet>();
+	const float CurrentPosture = Attributes->GetPosture();
+
 	// 防御側の体力を減らす
 	OutExecutionOutput.AddOutputModifier(
 		FGameplayModifierEvaluatedData(
@@ -139,13 +159,19 @@ void UCombatDamageExeCalc::HitDirect(
 		)
 	);
 
-	if (UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent())
+	if (AActor* TargetActor = TargetASC->GetAvatarActor())
 	{
-		if (AActor* TargetActor = TargetASC->GetAvatarActor())
+		FGameplayCueParameters CueParams;
+		CueParams.Location = HitLocation;
+		TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Direct, CueParams);
+	}
+
+	// 体幹が最大値になっていたら体幹崩れの処理をする
+	if (!TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered))
+	{
+		if ((CurrentPosture + DamagePosture) >= Attributes->GetMaxPosture())
 		{
-			FGameplayCueParameters CueParams;
-			CueParams.Location = HitLocation;
-			TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Direct, CueParams);
+			TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
 		}
 	}
 }

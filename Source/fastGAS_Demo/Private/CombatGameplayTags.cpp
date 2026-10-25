@@ -12,6 +12,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Guard, "State.Action.Guard");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Parry, "State.Action.Parry");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Dodge, "State.Action.Dodge");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Staggered, "State.Action.Staggered");
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_LockedOn, "State.Combat.LockedOn");
 
