@@ -391,6 +391,11 @@ void APlayerCharacter::LockProcess(AActor* Target)
 	IsLock = true;
 	LockOnTarget = Target;
 
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockOnTarget))
+	{
+		TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);
+	}
+
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	// 回避中は回転制御を邪魔しない
@@ -407,6 +412,10 @@ void APlayerCharacter::LockProcess(AActor* Target)
 void APlayerCharacter::UnLockProcess()
 {
 	IsLock = false;
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockOnTarget))
+	{
+		TargetASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);
+	}
 	LockOnTarget = nullptr;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
