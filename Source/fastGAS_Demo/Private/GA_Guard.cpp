@@ -18,8 +18,6 @@ void UGA_Guard::ActivateAbility(
 		return;
 	}
 
-	Character->bUseControllerRotationYaw = false;
-
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
 		NAME_None,
@@ -54,20 +52,10 @@ void UGA_Guard::ActivateAbility(
 
 void UGA_Guard::OnMontageEnded()
 {
-	if (ACombatCharacterBase* Character = GetCombatCharacter())
-	{
-		Character->bUseControllerRotationYaw = true;
-	}
-
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 
 void UGA_Guard::OnGuardEndEventReceived(FGameplayEventData payload)
 {
-	if (ACombatCharacterBase* Character = GetCombatCharacter())
-	{
-		Character->bUseControllerRotationYaw = true;
-	}
-
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

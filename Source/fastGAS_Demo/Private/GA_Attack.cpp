@@ -19,8 +19,6 @@ void UGA_Attack::ActivateAbility(
 		return;
 	}
 
-	Character->bUseControllerRotationYaw = false;
-
 	if (ComboSectionNames.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[UGA_Attack] ComboSectionNames is Empty."));
@@ -75,11 +73,6 @@ void UGA_Attack::ActivateAbility(
 
 void UGA_Attack::OnMontageEnded()
 {
-	if (ACombatCharacterBase* Character = GetCombatCharacter())
-	{
-		Character->bUseControllerRotationYaw = true;
-	}
-
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
 

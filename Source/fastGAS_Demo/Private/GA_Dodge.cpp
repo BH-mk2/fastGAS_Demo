@@ -44,7 +44,6 @@ void UGA_Dodge::ActivateAbility(
 
 	if (!DesiredDir.IsNearlyZero())
 	{
-		Character->bUseControllerRotationYaw = false;
 		Character->SetActorRotation(DesiredDir.Rotation());
 	}
 
@@ -72,10 +71,6 @@ void UGA_Dodge::ActivateAbility(
 void UGA_Dodge::OnMontageEnded()
 {
 	UE_LOG(LogTemp, Warning, TEXT("[UGA_Dodge] OnMontageEnded Called!"));
-	if (ACombatCharacterBase* Character = GetCombatCharacter())
-	{
-		Character->bUseControllerRotationYaw = true;
-	}
 
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }
