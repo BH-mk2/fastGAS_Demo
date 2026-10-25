@@ -44,7 +44,7 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	// 武器のソケットを元にしたSweepで衝突判定をする
 	// Memo: WorldContextObjectにthis(UAnimNotifyState)を指定すると衝突判定が行われない(ように見える)
 	//       存在しているWorldが確実なMeshCompを指定することで解消
-	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHits, true);
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::None, OutHits, true);
 	if (bHit)
 	{
 		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner);
@@ -62,15 +62,13 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 			if (!IsAdded)
 				continue;
 
-			// TODO: 攻撃を当てたときの処理
-			// TODO: 弾かれた時の処理
-			// TODO: ガードされた時の処理
 			// 直撃時の処理
 			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
 			if (!TargetASC)
 				continue;
 
 			FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
+			EffectContext.AddHitResult(Hit);
 			EffectContext.AddInstigator(Owner, Owner);
 
 			if (!DamageEffect)
