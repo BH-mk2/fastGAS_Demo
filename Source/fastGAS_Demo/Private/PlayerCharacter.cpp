@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "PlayerCharacter.h"
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -10,6 +10,7 @@
 #include "WeaponBase.h"
 #include "CombatGameplayTags.h"
 #include "AbilitySystemBlueprintLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -126,6 +127,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Guard);
 
+	if (!LockAction)
+		return;
+
+	EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &APlayerCharacter::Lock);
+
 	if (!DodgeAbilityClass)
 		return;
 
@@ -140,6 +146,32 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1));
+}
+
+void APlayerCharacter::Tick(float DeltaSeconds)
+{
+	// TODO: ロックオン対象へのカメラ追従
+	if (IsLock)
+	{
+		if (!LockOnTarget)
+		{
+			IsLock = false;
+			GetCharacterMovement()->bOrientRotationToMovement = true;
+			bUseControllerRotationYaw = false;
+			CameraBoom->SocketOffset = FVector();
+		}
+		else
+		{
+			const FVector CenterLocation = GetActorLocation() + (LockOnTarget->GetActorLocation() - GetActorLocation())/2.0f;
+			FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CenterLocation);
+			const auto& ControlRotation = GetControlRotation();
+			FRotator NewRotation = UKismetMathLibrary::RInterpTo(ControlRotation, LookAt, DeltaSeconds, LockOnInterpSpeed);
+			NewRotation = FRotator(ControlRotation.Pitch, NewRotation.Yaw, ControlRotation.Roll);
+
+			
+			Controller->SetControlRotation(NewRotation);
+		}
+	}
 }
 
 bool APlayerCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
@@ -252,4 +284,74 @@ void APlayerCharacter::Guard(const FInputActionValue& Value)
 		// 離したとき
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_GuardEnd, FGameplayEventData{});
 	}
+}
+
+void APlayerCharacter::Lock(const FInputActionValue& Value)
+{
+	const bool Pressed = Value.Get<bool>();
+
+	UE_LOG(LogTemp, Warning, TEXT("[APlayerCharacter] Lock Value:%s"), Pressed ? TEXT("true") : TEXT("false"));
+
+	// ボタンを押したときだけロック状態を切り替える
+	if (!Pressed)
+		return;
+
+	if (IsLock)
+	{
+		// 既にロックオンしている場合
+		LockOnTarget = nullptr;
+		IsLock = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+		bUseControllerRotationYaw = false;
+		CameraBoom->SocketOffset = FVector();
+		return;
+	}
+
+	// これからロックオンする場合
+	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
+	constexpr bool bTraceComplex = false;
+	const TArray<AActor*> ActorsToIgnore = { this };
+	TArray<FHitResult> OutHits;
+
+	// Sweepをカメラの前方に飛ばして一番近いターゲットにロックオンする
+	// 1. 球を飛ばす
+	const FVector Start = GetActorLocation();
+	const FVector End = Start;
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, LockOnRadius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHits, true);
+
+	// 2. 前方にいるものだけにフィルターする
+
+	float MostNearFrontDot = -1.0f;
+	AActor* MostTarget = nullptr;
+
+	for(const FHitResult& Hit : OutHits)
+	{
+		const auto TargetActor = Hit.GetActor();
+		const FVector ForwardVec = GetActorForwardVector();
+		const FVector ToTargetVec = TargetActor->GetActorLocation() - GetActorLocation();
+		const FVector ToTarget = ToTargetVec.GetSafeNormal2D();
+		const float DotProduct = FVector::DotProduct(ForwardVec, ToTarget);
+
+		// 正面ではないものは無視
+		if (DotProduct < 0.0f)
+			continue;
+
+		if (DotProduct > MostNearFrontDot)
+		{
+			MostNearFrontDot = DotProduct;
+			MostTarget = TargetActor;
+			continue;
+		}
+	}
+
+	// 3. 一番正面かつ近いものにロックオンする
+	if (!MostTarget)
+		return;
+
+	IsLock = true;
+	LockOnTarget = MostTarget;
+
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	bUseControllerRotationYaw = true;
+	CameraBoom->SocketOffset = LockOnOffset;
 }

@@ -30,6 +30,9 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
+
 	virtual bool GetAttackPoints(FVector& OutStart, FVector& OutEnd)const override;
 
 	/* 移動入力ハンドラ */
@@ -46,6 +49,9 @@ protected:
 
 	/* ガード入力ハンドラ */
 	void Guard(const FInputActionValue& Value);
+
+	/* ロックオン入力ハンドラ */
+	void Lock(const FInputActionValue& Value);
 
 protected:
 	/* カメラブーム */
@@ -80,6 +86,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="InputData")
 	UInputAction* GuardAction;
 
+	/* ロック用 InputAction (IA_Lock) */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "InputData")
+	UInputAction* LockAction;
+
 	/* 回避アビリティ */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
@@ -92,4 +102,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LockOn")
+	float LockOnRadius = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LockOn")
+	float LockOnInterpSpeed = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LockOn")
+	FVector LockOnOffset = FVector(0.0f, 90.0f, 0.0f);
+private:
+	bool IsLock=false;
+	TObjectPtr<AActor> LockOnTarget;
 };
