@@ -39,11 +39,29 @@ void UCombatDamageExeCalc::Execute_Implementation(
 		DotProduct, bIsFront ? TEXT("FRONT(正面)") : TEXT("BACK(背後)")
 	);
 
+	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
+	FGameplayEffectContextHandle ContextHandle = Spec.GetContext();
+
+	const FHitResult* HitResult = ContextHandle.GetHitResult();
+
+	FVector ImpactLocation = FVector::ZeroVector;
+	if (HitResult)
+	{
+		ImpactLocation = HitResult->ImpactPoint;
+	}
+	else
+	{
+		if (TargetASC && TargetASC->GetAvatarActor())
+		{
+			ImpactLocation = TargetASC->GetAvatarActor()->GetActorLocation();
+		}
+	}
+
 	// 背後から攻撃したとき
 	if (!bIsFront)
 	{
 		// 直撃
-		HitDirect(ExecutionParams, OutExecutionOutput);
+		HitDirect(ExecutionParams, OutExecutionOutput, ImpactLocation);
 		return;
 	}
 	// 正面から攻撃したとき
@@ -56,13 +74,15 @@ void UCombatDamageExeCalc::Execute_Implementation(
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit was Parried"));
 
+			FGameplayCueParameters CueParams;
+			CueParams.Location = ImpactLocation;
+			TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Parry, CueParams);
 		}
 		else if (bIsGuarding)
 		{
 			// 防御側の体幹を減らす
 			UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit was Guarded"));
 
-			const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 			const float DamageHealth = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health);
 			const float DamagePosture = Spec.GetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture);
 
@@ -73,11 +93,17 @@ void UCombatDamageExeCalc::Execute_Implementation(
 					DamagePosture * GuardDamagePostureRate
 				)
 			);
+
+			{
+				FGameplayCueParameters CueParams;
+				CueParams.Location = ImpactLocation;
+				TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Guard, CueParams);
+			}
 		}
 		else
 		{
 			// 直撃
-			HitDirect(ExecutionParams, OutExecutionOutput);
+			HitDirect(ExecutionParams, OutExecutionOutput, ImpactLocation);
 		}
 
 		return;
@@ -86,7 +112,8 @@ void UCombatDamageExeCalc::Execute_Implementation(
 
 void UCombatDamageExeCalc::HitDirect(
 	const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
-	FGameplayEffectCustomExecutionOutput& OutExecutionOutput
+	FGameplayEffectCustomExecutionOutput& OutExecutionOutput,
+	const FVector& HitLocation
 )const
 {
 	UE_LOG(LogTemp, Warning, TEXT("[CombatDamageExeCalc] Hit Direct"));
@@ -111,4 +138,14 @@ void UCombatDamageExeCalc::HitDirect(
 			DamagePosture
 		)
 	);
+
+	if (UAbilitySystemComponent* TargetASC = ExecutionParams.GetTargetAbilitySystemComponent())
+	{
+		if (AActor* TargetActor = TargetASC->GetAvatarActor())
+		{
+			FGameplayCueParameters CueParams;
+			CueParams.Location = HitLocation;
+			TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Direct, CueParams);
+		}
+	}
 }

@@ -26,7 +26,8 @@ private:
 	// 直撃時の処理
 	void HitDirect(
 		const FGameplayEffectCustomExecutionParameters& ExecutionParams, 
-		FGameplayEffectCustomExecutionOutput& OutExecutionOutput
+		FGameplayEffectCustomExecutionOutput& OutExecutionOutput,
+		const FVector& HitLocation
 	)const;
 
 	// 相手がガードした時の体幹増加率
