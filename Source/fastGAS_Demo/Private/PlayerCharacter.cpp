@@ -92,6 +92,10 @@ void APlayerCharacter::BeginPlay()
 		return;
 
 	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+
+	DefaultSocketOffset = CameraBoom->SocketOffset;
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &APlayerCharacter::OnDodgeTagChanged);
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -150,26 +154,43 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Tick(float DeltaSeconds)
 {
-	// TODO: ロックオン対象へのカメラ追従
+	UpdateCamera(DeltaSeconds);
+}
+
+void APlayerCharacter::UpdateCamera(float DeltaSeconds)
+{
+	// ロックオン対象へのカメラ追従
+	// カメラの位置
+	{
+		FVector TargetOffset = DefaultSocketOffset;
+
+		if (IsLock)
+		{
+			TargetOffset += LockOnOffset;
+		}
+
+		const FVector CurrentOffset = CameraBoom->SocketOffset;
+		CameraBoom->SocketOffset = FMath::VInterpTo(CurrentOffset, TargetOffset, DeltaSeconds, LockOnInterpSpeed);
+	}
+
 	if (IsLock)
 	{
 		if (!LockOnTarget)
 		{
-			IsLock = false;
-			GetCharacterMovement()->bOrientRotationToMovement = true;
-			bUseControllerRotationYaw = false;
-			CameraBoom->SocketOffset = FVector();
+			UnLockProcess();
 		}
 		else
 		{
-			const FVector CenterLocation = GetActorLocation() + (LockOnTarget->GetActorLocation() - GetActorLocation())/2.0f;
-			FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CenterLocation);
-			const auto& ControlRotation = GetControlRotation();
-			FRotator NewRotation = UKismetMathLibrary::RInterpTo(ControlRotation, LookAt, DeltaSeconds, LockOnInterpSpeed);
-			NewRotation = FRotator(ControlRotation.Pitch, NewRotation.Yaw, ControlRotation.Roll);
+			// カメラの向き
+			{
+				const FVector CenterLocation = GetActorLocation() + (LockOnTarget->GetActorLocation() - GetActorLocation()) / 2.0f;
+				FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CenterLocation);
+				const auto& ControlRotation = GetControlRotation();
+				FRotator NewRotation = UKismetMathLibrary::RInterpTo(ControlRotation, LookAt, DeltaSeconds, LockOnInterpSpeed);
+				NewRotation = FRotator(ControlRotation.Pitch, NewRotation.Yaw, ControlRotation.Roll);
 
-			
-			Controller->SetControlRotation(NewRotation);
+				Controller->SetControlRotation(NewRotation);
+			}
 		}
 	}
 }
@@ -243,6 +264,24 @@ void APlayerCharacter::Dodge()
 	UE_LOG(LogTemp, Warning, TEXT("TryDodgeResult: %d"), Result);
 }
 
+void APlayerCharacter::OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	const bool bIsDodgeActive = (NewCount > 0);
+
+	// 回避によってプレイヤー状態が変わっている可能性があるので適切な状態に更新する
+	if (!bIsDodgeActive)
+	{
+		if (IsLock)
+		{
+			LockProcess(LockOnTarget);
+		}
+		else
+		{
+			UnLockProcess();
+		}
+	}
+}
+
 void APlayerCharacter::Attack()
 {
 	if (!AbilitySystemComponent)
@@ -299,11 +338,7 @@ void APlayerCharacter::Lock(const FInputActionValue& Value)
 	if (IsLock)
 	{
 		// 既にロックオンしている場合
-		LockOnTarget = nullptr;
-		IsLock = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
-		bUseControllerRotationYaw = false;
-		CameraBoom->SocketOffset = FVector();
+		UnLockProcess();
 		return;
 	}
 
@@ -348,10 +383,32 @@ void APlayerCharacter::Lock(const FInputActionValue& Value)
 	if (!MostTarget)
 		return;
 
+	LockProcess(MostTarget);
+}
+
+void APlayerCharacter::LockProcess(AActor* Target)
+{
 	IsLock = true;
-	LockOnTarget = MostTarget;
+	LockOnTarget = Target;
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	bUseControllerRotationYaw = true;
-	CameraBoom->SocketOffset = LockOnOffset;
+
+	// 回避中は回転制御を邪魔しない
+	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Dodge))
+	{
+
+	}
+	else
+	{
+		bUseControllerRotationYaw = true;
+	}
+}
+
+void APlayerCharacter::UnLockProcess()
+{
+	IsLock = false;
+	LockOnTarget = nullptr;
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bUseControllerRotationYaw = false;
 }

@@ -113,4 +113,12 @@ protected:
 private:
 	bool IsLock=false;
 	TObjectPtr<AActor> LockOnTarget;
+
+	FVector DefaultSocketOffset;
+
+	void UpdateCamera(float DeltaSeconds);
+	void LockProcess(AActor* Target);
+	void UnLockProcess();
+
+	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
 };
