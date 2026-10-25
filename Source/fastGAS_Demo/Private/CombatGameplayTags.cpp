@@ -21,4 +21,9 @@ namespace CombatGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Health, "Data.Damage.Health");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Posture, "Data.Damage.Posture");
+
+	/* Gameplay Cue用 */
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Direct, "GameplayCue.Hit.Direct");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Guard, "GameplayCue.Hit.Guard");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Parry, "GameplayCue.Hit.Parry");
 }
