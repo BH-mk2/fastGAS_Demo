@@ -4,7 +4,6 @@
 #include "GA_Guard.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
-#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "CombatGameplayTags.h"
 
 void UGA_Guard::ActivateAbility(
