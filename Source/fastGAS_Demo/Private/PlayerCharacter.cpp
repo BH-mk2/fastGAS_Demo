@@ -150,6 +150,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1));
+
+	if (!DeathblowAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathblowAbilityClass, 1));
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -290,6 +295,19 @@ void APlayerCharacter::Attack()
 	if (!AttackAbilityClass)
 		return;
 
+	// 忍殺できる対象が居るか確認
+	if (NinsatsuAttackProcess())
+	{
+		return;
+	}
+	else
+	{
+		NormalAttackProcess();
+	}
+}
+
+void APlayerCharacter::NormalAttackProcess()
+{
 	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack))
 	{
 		// コンボ入力
@@ -300,7 +318,56 @@ void APlayerCharacter::Attack()
 		// 攻撃(ひと振り目)
 		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
 	}
+}
 
+bool APlayerCharacter::NinsatsuAttackProcess()
+{
+	// 前方に球を飛ばして体幹が崩れている敵がいたら忍殺を行う
+	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
+	constexpr bool bTraceComplex = false;
+	const TArray<AActor*> ActorsToIgnore = { this };
+	TArray<FHitResult> OutHits;
+
+	const FVector Start = GetActorLocation();
+	const FVector End = GetActorLocation() + GetActorForwardVector() * NinsatsuLength;
+	const float Radius = 50.0f;
+
+	// 武器のソケットを元にしたSweepで衝突判定をする
+	// Memo: WorldContextObjectにthis(UAnimNotifyState)を指定すると衝突判定が行われない(ように見える)
+	//       存在しているWorldが確実なMeshCompを指定することで解消
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, Radius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHits, true);
+	if (!bHit)
+		return false;
+
+	for (auto& Hit : OutHits)
+	{
+		auto TargetActor = Hit.GetActor();
+		if (!TargetActor)
+			continue;
+
+		auto TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+		if (!TargetASC)
+			continue;
+
+		const bool bIsStaggered = TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
+		if (!bIsStaggered)
+			continue;
+
+		// 忍殺アビリティを発動する
+		FGameplayAbilityTargetData_ActorArray* ActorArrayData = new FGameplayAbilityTargetData_ActorArray();
+		ActorArrayData->TargetActorArray.Add(TargetActor);
+
+		FGameplayAbilityTargetDataHandle TargetDataHandle;
+		TargetDataHandle.Add(ActorArrayData);
+
+		FGameplayEventData Payload;
+		Payload.TargetData = TargetDataHandle;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Deathblow, Payload);
+		return true;
+	}
+
+	return false;
 }
 
 void APlayerCharacter::Guard(const FInputActionValue& Value)

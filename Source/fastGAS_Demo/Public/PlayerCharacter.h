@@ -102,6 +102,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
 
+	/* 忍殺アビリティ */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> DeathblowAbilityClass;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="LockOn")
 	float LockOnRadius = 500.0f;
 
@@ -110,6 +114,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LockOn")
 	FVector LockOnOffset = FVector(0.0f, 90.0f, 0.0f);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ninsatsu")
+	float NinsatsuLength = 50.0f;
 private:
 	bool IsLock=false;
 	TObjectPtr<AActor> LockOnTarget;
@@ -121,4 +128,8 @@ private:
 	void UnLockProcess();
 
 	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
+
+	void NormalAttackProcess();
+	// 戻り値: true=忍殺を行う/false=忍殺は行わない
+	bool NinsatsuAttackProcess();
 };
