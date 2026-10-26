@@ -4,6 +4,7 @@ namespace CombatGameplayTags
 {
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Attack, "Event.Input.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_GuardEnd, "Event.Input.GuardEnd");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Deathblow, "Event.Input.Deathblow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
 

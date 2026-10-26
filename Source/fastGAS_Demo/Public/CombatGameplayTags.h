@@ -7,6 +7,7 @@ namespace CombatGameplayTags
 	// イベント用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Attack); // 攻撃の入力
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_GuardEnd); // 防御終了の入力
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Deathblow); // 忍殺の入力
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Evaluate); // 入力を評価(先行入力用)
 
 	// 状態用
