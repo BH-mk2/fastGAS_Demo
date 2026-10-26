@@ -349,6 +349,9 @@ bool APlayerCharacter::NinsatsuAttackProcess()
 		if (!TargetASC)
 			continue;
 
+		if (TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead))
+			continue;
+
 		const bool bIsStaggered = TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
 		if (!bIsStaggered)
 			continue;

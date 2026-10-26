@@ -8,6 +8,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action, "State.Action");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Attack, "State.Action.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action_Guard, "State.Action.Guard");
