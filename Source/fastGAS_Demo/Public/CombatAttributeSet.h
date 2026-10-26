@@ -24,6 +24,8 @@ class FASTGAS_DEMO_API UCombatAttributeSet : public UAttributeSet
 public:
 	UCombatAttributeSet();
 
+	void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
 	// 1. 体力（Health）
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData Health;
