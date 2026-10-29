@@ -9,6 +9,7 @@ namespace CombatGameplayTags
 
 	// StateTreeイベント用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_GuardEnd, "Event.State.Notify.GuardEnd"); // 防御が解除されたことを通知
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action, "State.Action");
