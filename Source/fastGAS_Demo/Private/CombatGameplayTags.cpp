@@ -7,6 +7,8 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Deathblow, "Event.Input.Deathblow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
+	// StateTreeイベント用
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action, "State.Action");

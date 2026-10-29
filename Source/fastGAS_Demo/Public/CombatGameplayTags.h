@@ -10,6 +10,9 @@ namespace CombatGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Deathblow); // 忍殺の入力
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Evaluate); // 入力を評価(先行入力用)
 
+	// StateTreeイベント用
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Cancellable_Attack); // 攻撃キャンセル可能を通知
+
 	// 状態用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Dead);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Action);
