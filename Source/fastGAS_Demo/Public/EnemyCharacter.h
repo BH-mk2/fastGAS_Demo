@@ -29,4 +29,17 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackCancellableDelegate);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAttackEndDelegate);
+
+	UPROPERTY(BlueprintAssignable, Category="Combat")
+	FOnAttackCancellableDelegate OnAttackCancellable;
+
+	UPROPERTY(BlueprintAssignable, Category="Combat")
+	FOnAttackEndDelegate OnAttackEnd;
+
+private:
+	void OnAttackCancellableInner(FGameplayTag Tag, int32 count);
+	void OnAttackEndInner(FGameplayTag Tag, int32 count);
 };
