@@ -22,6 +22,16 @@ void AEnemyCharacter::ExecuteAttack()
 	}
 }
 
+void AEnemyCharacter::ExecuteGuard()
+{
+	AbilitySystemComponent->TryActivateAbilityByClass(GuardAbilityClass);
+}
+
+void AEnemyCharacter::ExecuteGuardEnd()
+{
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_GuardEnd, FGameplayEventData{});
+}
+
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -31,11 +41,19 @@ void AEnemyCharacter::BeginPlay()
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass,1));
 
+	if (!GuardAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1));
+
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Combat_Cancellable_Attack)
 		.AddUObject(this, &AEnemyCharacter::OnAttackCancellableInner);
 
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Attack)
 		.AddUObject(this, &AEnemyCharacter::OnAttackEndInner);
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Guard)
+		.AddUObject(this, &AEnemyCharacter::OnGuardEndInner);
 }
 
 void AEnemyCharacter::OnAttackCancellableInner(FGameplayTag Tag, int32 count)
@@ -51,6 +69,14 @@ void AEnemyCharacter::OnAttackEndInner(FGameplayTag Tag, int32 count)
 	if (count == 0)
 	{
 		OnAttackEnd.Broadcast();
+	}
+}
+
+void AEnemyCharacter::OnGuardEndInner(FGameplayTag Tag, int32 count)
+{
+	if (count == 0)
+	{
+		OnGuardEnd.Broadcast();
 	}
 }
 
