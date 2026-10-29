@@ -19,6 +19,10 @@ public:
 		const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
+	virtual void EndAbility(
+		const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
 	UFUNCTION()
 	void OnMontageEnded();
 
@@ -32,4 +36,14 @@ public:
 	// アニメーション再生速度
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	float PlayRate = 1.0f;
+
+	// 弾き有効時間
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	float ParrySec = 0.25f;
+
+private:
+	bool IsReleasedParry = false;
+	
+	void ReleaseParry();
+	FTimerHandle ParryTimerHandle;
 };
