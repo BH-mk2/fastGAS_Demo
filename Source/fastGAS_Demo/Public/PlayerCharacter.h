@@ -12,6 +12,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class UUserWidget;
 
 /**
  * 
@@ -117,11 +118,16 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Ninsatsu")
 	float NinsatsuLength = 50.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="HUD")
+	TSubclassOf<UUserWidget> MainHUDClass;
 private:
 	bool IsLock=false;
 	TObjectPtr<AActor> LockOnTarget;
 
 	FVector DefaultSocketOffset;
+
+	UUserWidget* MainHUD;
 
 	void UpdateCamera(float DeltaSeconds);
 	void LockProcess(AActor* Target);
@@ -132,4 +138,6 @@ private:
 	void NormalAttackProcess();
 	// 戻り値: true=忍殺を行う/false=忍殺は行わない
 	bool NinsatsuAttackProcess();
+
+	void OnHealthChangedInner(const FOnAttributeChangeData& Data);
 };

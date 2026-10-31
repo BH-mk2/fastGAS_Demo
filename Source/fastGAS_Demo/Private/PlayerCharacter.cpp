@@ -9,8 +9,10 @@
 #include "EnhancedInputSubSystems.h"
 #include "WeaponBase.h"
 #include "CombatGameplayTags.h"
+#include "CombatAttributeSet.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blueprint/UserWidget.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -96,6 +98,19 @@ void APlayerCharacter::BeginPlay()
 	DefaultSocketOffset = CameraBoom->SocketOffset;
 
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &APlayerCharacter::OnDodgeTagChanged);
+
+	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+		UCombatAttributeSet::GetHealthAttribute()
+	).AddUObject(this, &APlayerCharacter::OnHealthChangedInner);
+
+	if (!MainHUDClass)
+		return;
+
+	MainHUD = CreateWidget<UUserWidget>(GetWorld(), MainHUDClass, TEXT("MainHUD"));
+	if (!MainHUD)
+		return;
+
+	MainHUD->AddToViewport();
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -490,4 +505,18 @@ void APlayerCharacter::UnLockProcess()
 
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
+}
+
+void APlayerCharacter::OnHealthChangedInner(const FOnAttributeChangeData& Data)
+{
+	if(Data.OldValue > 0.0f && Data.NewValue <= 0.0f)
+	{
+		// 死亡時
+		AbilitySystemComponent->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead);
+	}
+	else if (Data.OldValue <= 0.0f && Data.NewValue > 0.0f)
+	{
+		// 復活時
+		AbilitySystemComponent->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead);
+	}
 }
