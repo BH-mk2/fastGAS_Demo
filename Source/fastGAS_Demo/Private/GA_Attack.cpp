@@ -43,6 +43,7 @@ void UGA_Attack::ActivateAbility(
 	MontageTask->OnCompleted.AddDynamic(this, &UGA_Attack::OnMontageEnded);
 	MontageTask->OnInterrupted.AddDynamic(this, &UGA_Attack::OnMontageEnded);
 	MontageTask->OnCancelled.AddDynamic(this, &UGA_Attack::OnMontageEnded);
+	MontageTask->OnBlendOut.AddDynamic(this, &UGA_Attack::OnMontageEnded);
 
 	MontageTask->ReadyForActivation();
 
