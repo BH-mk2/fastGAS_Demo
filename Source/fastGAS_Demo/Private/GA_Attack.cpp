@@ -72,6 +72,13 @@ void UGA_Attack::ActivateAbility(
 	WaitEvaluteBufferTask->ReadyForActivation();
 }
 
+void UGA_Attack::EndAbility(
+	const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
 void UGA_Attack::OnMontageEnded()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
