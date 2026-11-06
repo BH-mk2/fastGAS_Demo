@@ -5,6 +5,9 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "PlayMontageCallbackProxy.h"
+
+#include "WeaponBase.h"
 
 ASamuraiCharacter::ASamuraiCharacter()
 {
@@ -35,6 +38,11 @@ ASamuraiCharacter::ASamuraiCharacter()
 void ASamuraiCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (Weapon)
+	{
+		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketForSheathe);
+	}
 }
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -44,4 +52,105 @@ void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 void ASamuraiCharacter::Tick(float DeltaSeconds)
 {
 
+}
+
+void ASamuraiCharacter::UnsheatheWeapon()
+{
+	if (bIsArmed) return;
+
+	PlayWeaponMontage(UnsheatheMotion, true);
+}
+void ASamuraiCharacter::SheatheWeapon()
+{
+	if (!bIsArmed) return;
+
+	PlayWeaponMontage(SheatheMotion, false);
+}
+
+void ASamuraiCharacter::OnUnsheatheEnded()
+{
+	AttachWeaponToHand();
+}
+
+void ASamuraiCharacter::OnSheatheEnded()
+{
+	AttachWeaponToSheath();
+}
+
+void ASamuraiCharacter::SetArmedState(bool bNewState)
+{
+	if (bIsArmed == bNewState)
+		return;
+
+	bIsArmed = bNewState;
+
+	OnArmedStateChanged.Broadcast(bIsArmed);
+}
+
+void ASamuraiCharacter::AttachWeaponToHand()
+{
+	if (Weapon && GetMesh())
+	{
+		Weapon->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::SnapToTargetIncludingScale,
+			SocketForHand
+		);
+	}
+}
+
+void ASamuraiCharacter::AttachWeaponToSheath()
+{
+	if (Weapon && GetMesh())
+	{
+		Weapon->AttachToComponent(
+			GetMesh(),
+			FAttachmentTransformRules::SnapToTargetIncludingScale,
+			SocketForSheathe
+		);
+	}
+}
+
+void ASamuraiCharacter::PlayWeaponMontage(UAnimMontage* MontageToPlay, bool bIsNewArmedState)
+{
+	if (!MontageToPlay)
+		return;
+
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->DisableMovement();
+	}
+
+	bPendingArmedState = bIsNewArmedState;
+
+	UPlayMontageCallbackProxy* MontageProxy = UPlayMontageCallbackProxy::CreateProxyObjectForPlayMontage(
+		GetMesh(),
+		MontageToPlay,
+		1.0f // 再生レート
+	);
+
+	if (!MontageProxy)
+	{
+		// 生成失敗時（スロット不一致や未ロード時）は移動復帰
+		if (GetCharacterMovement())
+		{
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+		}
+		return;
+	}
+
+	MontageProxy->OnCompleted.AddDynamic(this, &ASamuraiCharacter::OnWeaponMontageEnded);
+	MontageProxy->OnInterrupted.AddDynamic(this, &ASamuraiCharacter::OnWeaponMontageEnded);
+}
+
+void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
+{
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	}
+
+	SetArmedState(bPendingArmedState);
+
+	WeaponMontageEndedDelegate.Unbind();
 }
