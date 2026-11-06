@@ -22,7 +22,8 @@ public class fastGAS_Demo : ModuleRules
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-		});
+            "AnimGraphRuntime",
+        });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 
