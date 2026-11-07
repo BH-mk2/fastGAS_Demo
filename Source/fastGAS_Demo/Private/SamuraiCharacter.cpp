@@ -141,6 +141,7 @@ void ASamuraiCharacter::PlayWeaponMontage(UAnimMontage* MontageToPlay, bool bIsN
 
 	MontageProxy->OnCompleted.AddDynamic(this, &ASamuraiCharacter::OnWeaponMontageEnded);
 	MontageProxy->OnInterrupted.AddDynamic(this, &ASamuraiCharacter::OnWeaponMontageEnded);
+	MontageProxy->OnBlendOut.AddDynamic(this, &ASamuraiCharacter::OnWeaponMontageEnded);
 }
 
 void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
