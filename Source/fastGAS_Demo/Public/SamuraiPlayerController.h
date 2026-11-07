@@ -25,6 +25,9 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
+	UFUNCTION(BlueprintCallable, Category="Input")
+	void SetPlayerInputEnabled(bool bEnabled = false);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputMappingContext> DefaultIMC;
 

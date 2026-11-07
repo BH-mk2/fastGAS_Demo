@@ -52,6 +52,24 @@ void ASamuraiPlayerController::OnUnPossess()
 	ControlledCharacter = nullptr;
 }
 
+void ASamuraiPlayerController::SetPlayerInputEnabled(bool bEnabled)
+{
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!LocalPlayer)return;
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	if (!Subsystem || !DefaultIMC) return;
+
+	if (bEnabled)
+	{
+		Subsystem->AddMappingContext(DefaultIMC, 0);
+	}
+	else
+	{
+		Subsystem->RemoveMappingContext(DefaultIMC);
+	}
+}
+
 void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
