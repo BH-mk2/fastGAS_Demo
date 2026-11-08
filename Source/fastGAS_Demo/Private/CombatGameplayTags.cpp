@@ -28,6 +28,10 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_Cancellable_Attack, "State.Combat.Cancellable.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Combat_Cancellable_Dodge, "State.Combat.Cancellable.Dodge");
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Movement_Disable, "State.Movement.Disable");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_SmoothWindow, "State.Rotation.SmoothWindow");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_InstantWindow, "State.Rotation.InstantWindow");
+
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Health, "Data.Damage.Health");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Posture, "Data.Damage.Posture");
