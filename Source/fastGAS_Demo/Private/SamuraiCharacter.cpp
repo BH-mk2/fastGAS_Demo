@@ -192,3 +192,39 @@ void ASamuraiCharacter::ExecAttack()
 		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
 	}
 }
+
+void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
+{
+	if (WorldDirection.IsNearlyZero()) return;
+
+	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
+	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);
+	const bool bCanInstantRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_InstantWindow);
+
+	// ① 通常時：足が動かせる状態
+	if (!bIsMovementDisabled)
+	{
+		// 移動入力を流す。
+		// ※CharacterMovementの bOrientRotationToMovement が true なら、勝手に進行方向を向く
+		AddMovementInput(WorldDirection, Scale);
+	}
+	// ② 攻撃中など：足が止まっている状態
+	else
+	{
+		// 足は止まっているが、初動の向き調整ウィンドウが開いている時だけ手動で回す
+		// 即座に回転して良い場合
+		if (bCanInstantRotate)
+		{
+			SetActorRotation(FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f));
+		}
+		else if(bCanSmoothRotate)
+		{
+			// 滑らかに向きを変える
+			const FRotator CurrentRot = GetActorRotation();
+			const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
+			const float InterpSpeed = 10.0f;
+			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+			SetActorRotation(NewRot);
+		}
+	}
+}

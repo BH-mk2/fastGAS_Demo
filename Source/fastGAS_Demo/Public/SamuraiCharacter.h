@@ -36,6 +36,7 @@ public:
 	FOnArmedStateChangedSignature OnArmedStateChanged;
 
 	void ExecAttack();
+	void RequestMove(const FVector& WorldDirection, float Scale);
 
 protected:
 	virtual void BeginPlay() override;
