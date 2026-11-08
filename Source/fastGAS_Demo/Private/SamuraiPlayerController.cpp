@@ -10,13 +10,8 @@ void ASamuraiPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
-	{
-		if (DefaultIMC)
-		{
-			Subsystem->AddMappingContext(DefaultIMC, 0);
-		}
-	}
+	if(bAutoInputDisableOnBeginPlay)
+		SetPlayerInputEnabled(false);
 }
 
 void ASamuraiPlayerController::SetupInputComponent()
@@ -35,6 +30,11 @@ void ASamuraiPlayerController::SetupInputComponent()
 	if (LookAction)
 	{
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Look);
+	}
+
+	if (AttackAction)
+	{
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ASamuraiPlayerController::Input_Attack);
 	}
 }
 
@@ -63,10 +63,12 @@ void ASamuraiPlayerController::SetPlayerInputEnabled(bool bEnabled)
 	if (bEnabled)
 	{
 		Subsystem->AddMappingContext(DefaultIMC, 0);
+		UE_LOG(LogTemp, Log, TEXT("[Input] DefaultIMC Added (Input Enabled)"));
 	}
 	else
 	{
 		Subsystem->RemoveMappingContext(DefaultIMC);
+		UE_LOG(LogTemp, Log, TEXT("[Input] DefaultIMC Removed (Input Disabled)"));
 	}
 }
 
@@ -91,4 +93,14 @@ void ASamuraiPlayerController::Input_Look(const FInputActionValue& Value)
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
 	AddYawInput(LookAxisVector.X);
 	AddPitchInput(LookAxisVector.Y);
+}
+
+void ASamuraiPlayerController::Input_Attack(const FInputActionValue& Value)
+{
+	const bool bIsAttack = Value.Get<bool>();
+
+	if (!ControlledCharacter)
+		return;
+
+	ControlledCharacter->ExecAttack();
 }

@@ -28,6 +28,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void SetPlayerInputEnabled(bool bEnabled = false);
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	bool bAutoInputDisableOnBeginPlay = false;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Input")
 	TObjectPtr<UInputMappingContext> DefaultIMC;
 
@@ -36,10 +39,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> LookAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> AttackAction;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
 
 	void Input_Move(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
+	void Input_Attack(const FInputActionValue& Value);
 };
