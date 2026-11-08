@@ -6,8 +6,12 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlayMontageCallbackProxy.h"
+#include "AbilitySystemComponent.h"
+#include "GameplayAbilitySpec.h"
 
+#include "CombatGameplayAbility.h"
 #include "WeaponBase.h"
+#include "CombatGameplayTags.h"
 
 ASamuraiCharacter::ASamuraiCharacter()
 {
@@ -47,11 +51,30 @@ void ASamuraiCharacter::BeginPlay()
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (!AttackAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
 }
 
 void ASamuraiCharacter::Tick(float DeltaSeconds)
 {
 
+}
+
+bool ASamuraiCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
+{
+	if (!Weapon)
+		return false;
+	auto WeaponMesh = Weapon->GetWeaponMesh();
+	if (!WeaponMesh)
+		return false;
+
+	OutStart = WeaponMesh->GetSocketLocation("WeaponStart");
+	OutEnd = WeaponMesh->GetSocketLocation("WeaponEnd");
+
+	return true;
 }
 
 void ASamuraiCharacter::UnsheatheWeapon()
@@ -154,4 +177,18 @@ void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
 	SetArmedState(bPendingArmedState);
 
 	WeaponMontageEndedDelegate.Unbind();
+}
+
+void ASamuraiCharacter::ExecAttack()
+{
+	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack))
+	{
+		// コンボ入力
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Attack, FGameplayEventData{});
+	}
+	else
+	{
+		// 攻撃(ひと振り目)
+		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
+	}
 }

@@ -35,11 +35,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
 	FOnArmedStateChangedSignature OnArmedStateChanged;
 
+	void ExecAttack();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	virtual bool GetAttackPoints(FVector& OutStart, FVector& OutEnd)const override;
 
 	void SetArmedState(bool bNewState);
 
@@ -68,6 +72,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsArmed = false;
+
+	/* 攻撃系 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
 
 private:
 	void AttachWeaponToHand();
