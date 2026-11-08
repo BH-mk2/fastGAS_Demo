@@ -75,8 +75,8 @@ void ASamuraiPlayerController::SetPlayerInputEnabled(bool bEnabled)
 void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 {
 	const FVector2D MovementVector = Value.Get<FVector2D>();
-	APawn* ControlledPawn = GetPawn();
-	if (!ControlledPawn)return;
+
+	if (!ControlledCharacter)return;
 
 	const FRotator CameraRotation = GetControlRotation();
 	const FRotator YawRotation(0.0f, CameraRotation.Yaw, 0.0f);
@@ -84,8 +84,11 @@ void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 	const FVector ForwardVec = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightVec = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	ControlledPawn->AddMovementInput(ForwardVec, MovementVector.Y);
-	ControlledPawn->AddMovementInput(RightVec, MovementVector.X);
+	// ControlledPawn->AddMovementInput(ForwardVec, MovementVector.Y);
+	// ControlledPawn->AddMovementInput(RightVec, MovementVector.X);
+
+	const FVector DesiredDirection = (ForwardVec * MovementVector.Y + RightVec * MovementVector.X).GetSafeNormal();
+	ControlledCharacter->RequestMove(DesiredDirection, 1.0f);
 }
 
 void ASamuraiPlayerController::Input_Look(const FInputActionValue& Value)
