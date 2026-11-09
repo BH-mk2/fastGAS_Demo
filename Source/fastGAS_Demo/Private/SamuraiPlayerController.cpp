@@ -12,6 +12,8 @@ void ASamuraiPlayerController::BeginPlay()
 
 	if(bAutoInputDisableOnBeginPlay)
 		SetPlayerInputEnabled(false);
+	else
+		SetPlayerInputEnabled(true);
 }
 
 void ASamuraiPlayerController::SetupInputComponent()
