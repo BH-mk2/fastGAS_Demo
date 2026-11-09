@@ -37,6 +37,10 @@ public:
 
 	void ExecAttack();
 	void RequestMove(const FVector& WorldDirection, float Scale);
+	void ToggleLockOnTarget();
+	TWeakObjectPtr<AActor> SearchTarget();
+	void LockOff();
+	TWeakObjectPtr<AActor> GetLockedOnTarget();
 
 protected:
 	virtual void BeginPlay() override;
@@ -74,6 +78,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsArmed = false;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
+	float LockOnRadius = 400.0f;
+
 	/* 攻撃系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
@@ -90,4 +97,9 @@ private:
 
 	FOnMontageEnded WeaponMontageEndedDelegate;
 	bool bPendingArmedState = false;
+
+	TWeakObjectPtr<AActor> LockedOnTarget;
+
+	UFUNCTION()
+	void OnTargetDestroyed(AActor* DestroyedActor);
 };

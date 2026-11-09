@@ -8,6 +8,7 @@
 #include "PlayMontageCallbackProxy.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 #include "CombatGameplayAbility.h"
 #include "WeaponBase.h"
@@ -201,11 +202,24 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);
 	const bool bCanInstantRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_InstantWindow);
 
+	const float TurnAroundSpeed = 10.0f;
+
 	// ① 通常時：足が動かせる状態
 	if (!bIsMovementDisabled)
 	{
-		// 移動入力を流す。
-		// ※CharacterMovementの bOrientRotationToMovement が true なら、勝手に進行方向を向く
+		// 移動入力を流す
+		if (auto Target = LockedOnTarget.Get())
+		{
+			// ロックオン中は方向入力があった場合、ターゲットの方向に回転する
+			if (!WorldDirection.IsNearlyZero())
+			{
+				const FRotator CurrentRot = GetActorRotation();
+				const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+				const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
+				const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+				SetActorRotation(NewRot);
+			}
+		}
 		AddMovementInput(WorldDirection, Scale);
 	}
 	// ② 攻撃中など：足が止まっている状態
@@ -222,9 +236,98 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 			// 滑らかに向きを変える
 			const FRotator CurrentRot = GetActorRotation();
 			const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
-			const float InterpSpeed = 10.0f;
-			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), InterpSpeed);
+			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
 			SetActorRotation(NewRot);
 		}
 	}
+}
+
+TWeakObjectPtr<AActor> ASamuraiCharacter::SearchTarget()
+{
+	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
+	constexpr bool bTraceComplex = false;
+	const TArray<AActor*> ActorsToIgnore = { this };
+	TArray<FHitResult> OutHits;
+
+	// Sweepをカメラの前方に飛ばして一番近いターゲットにロックオンする
+	// 1. 球を飛ばす
+	const FVector Start = GetActorLocation();
+	const FVector End = Start;
+	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, LockOnRadius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHits, true);
+
+	// 2. カメラ前方にいるものだけにフィルターする
+	const FVector ViewForward = GetViewRotation().Vector();
+
+	double BestLength = -1.0f;
+	AActor* BestTarget = nullptr;
+
+	for (FHitResult& Enemy : OutHits)
+	{
+		const auto TargetActor = Enemy.GetActor();
+		if (!TargetActor)continue;
+		const FVector ForwardVec = ViewForward;
+		const FVector ToTargetVec = TargetActor->GetActorLocation() - GetActorLocation();
+		const double ToTargetLength = ToTargetVec.Length();
+		const FVector ToTargetNormal = ToTargetVec.GetSafeNormal2D();
+		const float DotProduct = FVector::DotProduct(ForwardVec, ToTargetNormal);
+
+		// 正面ではないものは無視
+		if (DotProduct < 0.0f)
+			continue;
+
+		if (ToTargetLength > BestLength)
+		{
+			BestLength = ToTargetLength;
+			BestTarget = TargetActor;
+		}
+	}
+
+	return BestTarget;
+}
+
+void ASamuraiCharacter::ToggleLockOnTarget()
+{
+	// 既にロックオンしている場合、外して終了
+	if (LockedOnTarget.IsValid())
+	{
+		LockedOnTarget->OnDestroyed.RemoveDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
+		LockOff();
+		return;
+	}
+
+	// ターゲットを探索して、存在したらロックオンする
+	LockedOnTarget = SearchTarget();
+	if (!LockedOnTarget.IsValid())
+	{
+		// 存在しないので終了
+		LockedOnTarget = nullptr;
+		return;
+	}
+
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	LockedOnTarget->OnDestroyed.AddDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
+
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockedOnTarget.Get()))
+	{
+		TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);
+	}
+}
+void ASamuraiCharacter::LockOff()
+{
+	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockedOnTarget.Get()))
+	{
+		TargetASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);
+	}
+	LockedOnTarget = nullptr;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+void ASamuraiCharacter::OnTargetDestroyed(AActor* DestroyedActor)
+{
+	LockOff();
+}
+
+TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()
+{
+	return LockedOnTarget;
 }
