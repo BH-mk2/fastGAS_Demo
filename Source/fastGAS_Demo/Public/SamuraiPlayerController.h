@@ -24,6 +24,7 @@ protected:
 	virtual void SetupInputComponent() override;
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
+	virtual void PlayerTick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void SetPlayerInputEnabled(bool bEnabled = false);
@@ -42,6 +43,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> AttackAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> LockAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	float TurnAroundSpeedForLockon = 10.0f;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
@@ -49,4 +56,5 @@ private:
 	void Input_Move(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Attack(const FInputActionValue& Value);
+	void Input_Lock(const FInputActionValue& Value);
 };

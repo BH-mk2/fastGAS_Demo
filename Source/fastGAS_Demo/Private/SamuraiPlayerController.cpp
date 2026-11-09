@@ -38,6 +38,11 @@ void ASamuraiPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &ASamuraiPlayerController::Input_Attack);
 	}
+
+	if (LockAction)
+	{
+		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Lock);
+	}
 }
 
 void ASamuraiPlayerController::OnPossess(APawn* InPawn)
@@ -52,6 +57,27 @@ void ASamuraiPlayerController::OnUnPossess()
 	Super::OnUnPossess();
 
 	ControlledCharacter = nullptr;
+}
+
+void ASamuraiPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	// カメラの向きをターゲットの方向に向ける
+	ASamuraiCharacter* Samurai = Cast<ASamuraiCharacter>(GetPawn());
+	if (!Samurai) return;
+
+	if (AActor* Target = Samurai->GetLockedOnTarget().Get())
+	{
+		const FVector CameraLocation = PlayerCameraManager->GetCameraLocation();
+		const FVector TargetLocation = Target->GetActorLocation();
+
+		const FRotator CurrentRot = GetControlRotation();
+		const FRotator TargetRot = (TargetLocation - CameraLocation).Rotation();
+		FRotator NewRot = FMath::RInterpTo(CurrentRot,TargetRot,DeltaTime, TurnAroundSpeedForLockon);
+
+		SetControlRotation(NewRot);
+	}
 }
 
 void ASamuraiPlayerController::SetPlayerInputEnabled(bool bEnabled)
@@ -86,9 +112,6 @@ void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 	const FVector ForwardVec = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightVec = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	// ControlledPawn->AddMovementInput(ForwardVec, MovementVector.Y);
-	// ControlledPawn->AddMovementInput(RightVec, MovementVector.X);
-
 	const FVector DesiredDirection = (ForwardVec * MovementVector.Y + RightVec * MovementVector.X).GetSafeNormal();
 	ControlledCharacter->RequestMove(DesiredDirection, 1.0f);
 }
@@ -108,4 +131,16 @@ void ASamuraiPlayerController::Input_Attack(const FInputActionValue& Value)
 		return;
 
 	ControlledCharacter->ExecAttack();
+}
+
+void ASamuraiPlayerController::Input_Lock(const FInputActionValue& Value)
+{
+	const bool bIsPush = Value.Get<bool>();
+	if (!bIsPush)
+		return;
+
+	if (!ControlledCharacter)
+		return;
+
+	ControlledCharacter->ToggleLockOnTarget();
 }
