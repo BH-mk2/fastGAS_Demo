@@ -33,7 +33,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	UAnimMontage* BackwardDodgeMontage;
 
+	// 左回避用アニメーション
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	UAnimMontage* LeftDodgeMontage;
+
+	// 右回避用アニメーション
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	UAnimMontage* RightDodgeMontage;
+
 	// アニメーション再生速度
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
-	float PlayRate = 1.0f;
+	float PlayRateForward = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	float PlayRateBackward = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	float PlayRateLeft = 1.0f;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	float PlayRateRight = 1.0f;
 };

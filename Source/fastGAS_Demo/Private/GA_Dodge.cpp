@@ -39,14 +39,62 @@ void UGA_Dodge::ActivateAbility(
 	}
 
 	const FVector DesiredDir = Character->GetDesiredMoveDirection();
+	UE_LOG(LogTemp, Warning, TEXT("UGA_Dodge: DesiredDir: %s"), *DesiredDir.ToCompactString());
 
-	UAnimMontage*const SelectedMontage = (DesiredDir.IsNearlyZero()) ? BackwardDodgeMontage : ForwardDodgeMontage;
+	// TODO: 向きによって再生するモンタージュを変える
+	// 1. 入力がない場合、後ろステップ
+	// 2. 真横の場合、左右ステップ
+	// 3. 前方±45度の場合、アクタの向きを入力方向に変えてその方向に向かって前ステップ
+	UAnimMontage* const SelectedMontage = [&]() {
+		if (DesiredDir.IsNearlyZero())
+		{
+			return BackwardDodgeMontage;
+		}
+
+		const FRotator DesiredRot = DesiredDir.Rotation();
+		const float AngleDiff = (DesiredRot - Character->GetViewRotation()).GetNormalized().Yaw;
+
+		// 前
+		if (-45.0f <= AngleDiff && AngleDiff <= 45.0f)
+		{
+			return ForwardDodgeMontage;
+		}
+		// 左
+		else if ((-180.0f+45.0f) < AngleDiff && AngleDiff < -45.0f)
+		{
+			return LeftDodgeMontage;
+		}
+		// 右
+		else if ((180.0f-45.0f) > AngleDiff && AngleDiff > 45.0f)
+		{
+			return RightDodgeMontage;
+		}
+		// 後ろ
+		else
+		{
+			return BackwardDodgeMontage;
+		}
+		}();
 
 	if (!DesiredDir.IsNearlyZero())
 	{
-		Character->bUseControllerRotationYaw = false;
-		Character->SetActorRotation(DesiredDir.Rotation());
+		if (SelectedMontage == ForwardDodgeMontage)
+		{
+			Character->SetActorRotation(DesiredDir.Rotation());
+		}
+		else if (SelectedMontage == LeftDodgeMontage || SelectedMontage == RightDodgeMontage)
+		{
+			// None
+		}
 	}
+
+	const float PlayRate = [&]() {
+		if (SelectedMontage == ForwardDodgeMontage)return PlayRateForward;
+		else if (SelectedMontage == BackwardDodgeMontage)return PlayRateBackward;
+		else if (SelectedMontage == LeftDodgeMontage)return PlayRateLeft;
+		else if (SelectedMontage == RightDodgeMontage)return PlayRateRight;
+		else return 1.0f;
+		}();
 
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
 		this,
