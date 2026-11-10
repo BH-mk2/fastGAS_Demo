@@ -22,7 +22,8 @@ void UANS_ApplyCurveMovement::NotifyTick(USkeletalMeshComponent* MeshComp, UAnim
 		return;
 
 	const float Speed = CurrentCurveValue * SpeedMultiplier;
-	const FVector MoveDelta = Character->GetActorForwardVector() * Speed * FrameDeltaTime;
+	const FRotator TargetRot = Character->GetActorRotation() + FRotator(0.0f, DirectionAngle, 0.0f);
+	const FVector MoveDelta = TargetRot.Vector() * Speed * FrameDeltaTime;
 
 	FHitResult HitResult;
 	Character->AddActorWorldOffset(MoveDelta, true, &HitResult);
