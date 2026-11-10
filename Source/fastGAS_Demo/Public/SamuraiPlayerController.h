@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "GameplayTagContainer.h"
 #include "SamuraiPlayerController.generated.h"
 
 class ASamuraiCharacter;
@@ -49,12 +50,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	float TurnAroundSpeedForLockon = 10.0f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> DodgeAction;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
 
 	void Input_Move(const FInputActionValue& Value);
+	void Input_MoveEnd(const FInputActionValue& Value);
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Attack(const FInputActionValue& Value);
 	void Input_Lock(const FInputActionValue& Value);
+	void Input_Dodge(const FInputActionValue& Value);
+
+	UFUNCTION()
+	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
+	FDelegateHandle HandleForOnDodgeTagChanged;
 };

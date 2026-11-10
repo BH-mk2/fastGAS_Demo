@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "SamuraiCharacter.h"
+#include "CombatGameplayTags.h"
 
 void ASamuraiPlayerController::BeginPlay()
 {
@@ -27,6 +28,7 @@ void ASamuraiPlayerController::SetupInputComponent()
 	if (MoveAction)
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ASamuraiPlayerController::Input_MoveEnd);
 	}
 
 	if (LookAction)
@@ -43,6 +45,11 @@ void ASamuraiPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(LockAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Lock);
 	}
+
+	if (DodgeAction)
+	{
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Dodge);
+	}
 }
 
 void ASamuraiPlayerController::OnPossess(APawn* InPawn)
@@ -50,11 +57,19 @@ void ASamuraiPlayerController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	ControlledCharacter = Cast<ASamuraiCharacter>(InPawn);
+
+	auto ASC = ControlledCharacter->GetAbilitySystemComponent();
+	HandleForOnDodgeTagChanged = ASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge)
+		.AddUObject(this, &ASamuraiPlayerController::OnDodgeTagChanged);
 }
 
 void ASamuraiPlayerController::OnUnPossess()
 {
 	Super::OnUnPossess();
+
+	auto ASC = ControlledCharacter->GetAbilitySystemComponent();
+	ASC->UnregisterGameplayTagEvent(HandleForOnDodgeTagChanged, CombatGameplayTags::CGTAG_STATE_Action_Dodge);
+	HandleForOnDodgeTagChanged.Reset();
 
 	ControlledCharacter = nullptr;
 }
@@ -116,6 +131,13 @@ void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 	ControlledCharacter->RequestMove(DesiredDirection, 1.0f);
 }
 
+void ASamuraiPlayerController::Input_MoveEnd(const FInputActionValue& Value)
+{
+	if (!ControlledCharacter)return;
+
+	ControlledCharacter->RequestMove(FVector::ZeroVector, 0.0f);
+}
+
 void ASamuraiPlayerController::Input_Look(const FInputActionValue& Value)
 {
 	const FVector2D LookAxisVector = Value.Get<FVector2D>();
@@ -143,4 +165,27 @@ void ASamuraiPlayerController::Input_Lock(const FInputActionValue& Value)
 		return;
 
 	ControlledCharacter->ToggleLockOnTarget();
+}
+
+void ASamuraiPlayerController::Input_Dodge(const FInputActionValue& Value)
+{
+	const bool bIsPush = Value.Get<bool>();
+
+	if (bIsPush)
+	{
+		if (!ControlledCharacter)
+			return;
+		ControlledCharacter->ExecDodge();
+		return;
+	}
+}
+
+void ASamuraiPlayerController::OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	bool bIsAdded = (NewCount > 0);
+
+	if (bIsAdded)
+	{
+		return;
+	}
 }
