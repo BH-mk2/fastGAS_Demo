@@ -22,6 +22,8 @@ public:
 
 	virtual FVector GetDesiredMoveDirection() const { ensureAlwaysMsgf(false, TEXT("Class %s is Unimplemented: GetDesiredMoveDirection()"), *GetName()); return FVector::ZeroVector; }
 
+	TObjectPtr<UAbilitySystemComponent> GetAbilitySystemComponent() { return AbilitySystemComponent; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
