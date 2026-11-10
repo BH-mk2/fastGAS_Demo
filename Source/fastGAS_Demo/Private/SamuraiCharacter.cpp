@@ -40,6 +40,11 @@ ASamuraiCharacter::ASamuraiCharacter()
 	FollowCamera->bUsePawnControlRotation = false; // アームに対して固定
 }
 
+FVector ASamuraiCharacter::GetDesiredMoveDirection() const
+{
+	return DesiredMoveDirection;
+}
+
 void ASamuraiCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -57,6 +62,11 @@ void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
+
+	if (!DodgeAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
 }
 
 void ASamuraiCharacter::Tick(float DeltaSeconds)
@@ -194,9 +204,20 @@ void ASamuraiCharacter::ExecAttack()
 	}
 }
 
+void ASamuraiCharacter::ExecDodge()
+{
+	AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+}
+
 void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 {
-	if (WorldDirection.IsNearlyZero()) return;
+	if (WorldDirection.IsNearlyZero())
+	{
+		DesiredMoveDirection = FVector::ZeroVector;
+		return;
+	}
+
+	DesiredMoveDirection = WorldDirection;
 
 	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
 	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);

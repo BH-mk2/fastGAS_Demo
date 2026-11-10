@@ -22,6 +22,8 @@ class FASTGAS_DEMO_API ASamuraiCharacter : public ACombatCharacterBase
 public:
 	ASamuraiCharacter();
 
+	virtual FVector GetDesiredMoveDirection() const override;
+
 	UFUNCTION(BlueprintCallable, Category="Combat")
 	void UnsheatheWeapon();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -36,6 +38,7 @@ public:
 	FOnArmedStateChangedSignature OnArmedStateChanged;
 
 	void ExecAttack();
+	void ExecDodge();
 	void RequestMove(const FVector& WorldDirection, float Scale);
 	void ToggleLockOnTarget();
 	TWeakObjectPtr<AActor> SearchTarget();
@@ -85,6 +88,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
 
+	/* 回避系 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
+
 private:
 	void AttachWeaponToHand();
 
@@ -102,4 +109,6 @@ private:
 
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
+
+	FVector DesiredMoveDirection = FVector::ZeroVector;
 };
