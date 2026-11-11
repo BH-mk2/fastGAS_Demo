@@ -62,6 +62,18 @@ void UGA_Guard::ActivateAbility(
 	UAbilityTask_WaitInputRelease* WaitReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this);
 	WaitReleaseTask->OnRelease.AddDynamic(this, &UGA_Guard::OnInputReleased);
 	WaitReleaseTask->ReadyForActivation();
+
+	// 攻撃を受けたときのタスク
+	UAbilityTask_WaitGameplayEvent* WaitHitTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock,
+		nullptr,
+		false,
+		true
+	);
+
+	WaitHitTask->EventReceived.AddDynamic(this, &UGA_Guard::OnHitBlockReceived);
+	WaitHitTask->ReadyForActivation();
 }
 
 void UGA_Guard::EndAbility(
@@ -102,4 +114,9 @@ void UGA_Guard::ReleaseParry()
 void UGA_Guard::OnInputReleased(float TImeHeld)
 {
 	MontageJumpToSection(EndSectionName);
+}
+
+void UGA_Guard::OnHitBlockReceived(FGameplayEventData Payload)
+{
+	MontageJumpToSection(HitSectionName);
 }

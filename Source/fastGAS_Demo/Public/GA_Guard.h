@@ -41,6 +41,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	FName EndSectionName = FName("End");
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	FName HitSectionName = FName("Hit");
 
 	// 弾き有効時間
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
@@ -54,4 +56,7 @@ private:
 
 	UFUNCTION()
 	void OnInputReleased(float TImeHeld);
+
+	UFUNCTION()
+	void OnHitBlockReceived(FGameplayEventData Payload);
 };
