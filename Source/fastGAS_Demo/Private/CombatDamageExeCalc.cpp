@@ -87,6 +87,16 @@ void UCombatDamageExeCalc::Execute_Implementation(
 
 				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(TargetActor, CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock, Payload);
 			}
+
+			// 弾きを成功させたイベントを発行
+			{
+				FGameplayEventData Payload;
+				Payload.Instigator = SourceActor;
+				Payload.Target = TargetActor;
+				Payload.EventMagnitude = 0;
+
+				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(TargetActor, CombatGameplayTags::CGTAG_EVENT_Combat_ParrySuccess, Payload);
+			}
 		}
 		else if (bIsGuarding)
 		{
