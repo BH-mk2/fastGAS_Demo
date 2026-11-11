@@ -12,6 +12,7 @@
 
 #include "CombatGameplayAbility.h"
 #include "WeaponBase.h"
+#include "CombatAbilityInputID.h"
 #include "CombatGameplayTags.h"
 
 ASamuraiCharacter::ASamuraiCharacter()
@@ -67,6 +68,11 @@ void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
+
+	if (!GuardAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1, static_cast<int32>(ECombatAbilityInputID::Guard)));
 }
 
 void ASamuraiCharacter::Tick(float DeltaSeconds)
@@ -351,4 +357,14 @@ void ASamuraiCharacter::OnTargetDestroyed(AActor* DestroyedActor)
 TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()
 {
 	return LockedOnTarget;
+}
+
+void ASamuraiCharacter::StartGuard()
+{
+	AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ECombatAbilityInputID::Guard));
+}
+
+void ASamuraiCharacter::StopGuard()
+{
+	AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(ECombatAbilityInputID::Guard));
 }

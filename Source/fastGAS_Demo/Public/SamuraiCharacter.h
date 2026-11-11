@@ -44,6 +44,8 @@ public:
 	TWeakObjectPtr<AActor> SearchTarget();
 	void LockOff();
 	TWeakObjectPtr<AActor> GetLockedOnTarget();
+	void StartGuard();
+	void StopGuard();
 
 protected:
 	virtual void BeginPlay() override;
@@ -91,6 +93,10 @@ protected:
 	/* 回避系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
+
+	/* ガード系 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
 
 private:
 	void AttachWeaponToHand();
