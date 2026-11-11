@@ -68,7 +68,7 @@ void UCombatDamageExeCalc::Execute_Implementation(
 	else
 	{
 		const bool bIsParrying = TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Parry);
-		const bool bIsGuarding = TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Guard);
+		const bool bIsGuarding = TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_COMBAT_Defense_Guard);
 
 		if (bIsParrying)
 		{
@@ -77,6 +77,16 @@ void UCombatDamageExeCalc::Execute_Implementation(
 			FGameplayCueParameters CueParams;
 			CueParams.Location = ImpactLocation;
 			TargetASC->ExecuteGameplayCue(CombatGameplayTags::CGTAG_GAMEPLAYCUE_Hit_Parry, CueParams);
+
+			// 攻撃を防いだイベントを発行
+			{
+				FGameplayEventData Payload;
+				Payload.Instigator = SourceActor;
+				Payload.Target = TargetActor;
+				Payload.EventMagnitude = 0;
+
+				UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(TargetActor, CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock, Payload);
+			}
 		}
 		else if (bIsGuarding)
 		{
@@ -110,6 +120,18 @@ void UCombatDamageExeCalc::Execute_Implementation(
 				if ((CurrentPosture + ApplyDamagePosture) >= Attributes->GetMaxPosture())
 				{
 					TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
+				}
+				else
+				{
+					// 攻撃を防いだイベントを発行
+					{
+						FGameplayEventData Payload;
+						Payload.Instigator = SourceActor;
+						Payload.Target = TargetActor;
+						Payload.EventMagnitude = ApplyDamagePosture;
+
+						UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(TargetActor, CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock, Payload);
+					}
 				}
 			}
 		}
