@@ -32,9 +32,12 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_SmoothWindow, "State.Rotation.SmoothWindow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_InstantWindow, "State.Rotation.InstantWindow");
 
-
+	// データ用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Health, "Data.Damage.Health");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Posture, "Data.Damage.Posture");
+
+	// 判定用
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_COMBAT_Defense_Guard, "Combat.Defense.Guard");
 
 	/* Gameplay Cue用 */
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Direct, "GameplayCue.Hit.Direct");
