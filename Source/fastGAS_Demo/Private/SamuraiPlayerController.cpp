@@ -50,6 +50,11 @@ void ASamuraiPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Dodge);
 	}
+
+	if (GuardAction)
+	{
+		EnhancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Guard);
+	}
 }
 
 void ASamuraiPlayerController::OnPossess(APawn* InPawn)
@@ -186,6 +191,22 @@ void ASamuraiPlayerController::OnDodgeTagChanged(FGameplayTag Tag, int32 NewCoun
 
 	if (bIsAdded)
 	{
+		return;
+	}
+}
+
+void ASamuraiPlayerController::Input_Guard(const FInputActionValue& Value)
+{
+	const bool bIsPush = Value.Get<bool>();
+
+	if (bIsPush)
+	{
+		ControlledCharacter->StartGuard();
+		return;
+	}
+	else
+	{
+		ControlledCharacter->StopGuard();
 		return;
 	}
 }

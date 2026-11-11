@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> DodgeAction;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> GuardAction;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
@@ -63,6 +66,7 @@ private:
 	void Input_Attack(const FInputActionValue& Value);
 	void Input_Lock(const FInputActionValue& Value);
 	void Input_Dodge(const FInputActionValue& Value);
+	void Input_Guard(const FInputActionValue& Value);
 
 	UFUNCTION()
 	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
