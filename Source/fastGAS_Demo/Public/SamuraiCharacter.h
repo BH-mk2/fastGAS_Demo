@@ -41,6 +41,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
 	FOnGuardedStateChangedSignature OnGuardedStateChanged;
 
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ExecAttack();
 	void ExecDodge();
 	void RequestMove(const FVector& WorldDirection, float Scale);
