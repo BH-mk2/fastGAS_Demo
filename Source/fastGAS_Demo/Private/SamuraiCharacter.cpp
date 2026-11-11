@@ -54,10 +54,6 @@ void ASamuraiCharacter::BeginPlay()
 	{
 		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketForSheathe);
 	}
-}
-void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (!AttackAbilityClass)
 		return;
@@ -76,6 +72,10 @@ void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Guard)
 		.AddUObject(this, &ASamuraiCharacter::OnGuardTagChanged);
+}
+void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void ASamuraiCharacter::Tick(float DeltaSeconds)
