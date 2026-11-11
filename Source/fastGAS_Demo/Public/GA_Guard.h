@@ -15,6 +15,8 @@ class FASTGAS_DEMO_API UGA_Guard : public UCombatGameplayAbility
 	GENERATED_BODY()
 
 public:
+	UGA_Guard();
+
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
@@ -37,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	float PlayRate = 1.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
+	FName EndSectionName = FName("End");
+
 	// 弾き有効時間
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	float ParrySec = 0.25f;
@@ -46,4 +51,7 @@ private:
 	
 	void ReleaseParry();
 	FTimerHandle ParryTimerHandle;
+
+	UFUNCTION()
+	void OnInputReleased(float TImeHeld);
 };

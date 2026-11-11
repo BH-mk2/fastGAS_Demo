@@ -4,7 +4,13 @@
 #include "GA_Guard.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "CombatGameplayTags.h"
+
+UGA_Guard::UGA_Guard()
+{
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+}
 
 void UGA_Guard::ActivateAbility(
 	const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
@@ -35,6 +41,7 @@ void UGA_Guard::ActivateAbility(
 	GetWorld()->GetTimerManager().SetTimer(ParryTimerHandle, this, &UGA_Guard::ReleaseParry, ParrySec, false);
 
 	MontageTask->OnCompleted.AddDynamic(this, &UGA_Guard::OnMontageEnded);
+	MontageTask->OnBlendOut.AddDynamic(this, &UGA_Guard::OnMontageEnded);
 	MontageTask->OnInterrupted.AddDynamic(this, &UGA_Guard::OnMontageEnded);
 	MontageTask->OnCancelled.AddDynamic(this, &UGA_Guard::OnMontageEnded);
 
@@ -51,6 +58,10 @@ void UGA_Guard::ActivateAbility(
 
 	WaitInputTask->EventReceived.AddDynamic(this, &UGA_Guard::OnGuardEndEventReceived);
 	WaitInputTask->ReadyForActivation();
+
+	UAbilityTask_WaitInputRelease* WaitReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this);
+	WaitReleaseTask->OnRelease.AddDynamic(this, &UGA_Guard::OnInputReleased);
+	WaitReleaseTask->ReadyForActivation();
 }
 
 void UGA_Guard::EndAbility(
@@ -86,4 +97,9 @@ void UGA_Guard::ReleaseParry()
 		return;
 
 	ASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Parry);
+}
+
+void UGA_Guard::OnInputReleased(float TImeHeld)
+{
+	MontageJumpToSection(EndSectionName);
 }
