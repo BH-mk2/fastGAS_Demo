@@ -6,6 +6,7 @@
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
 #include "CombatGameplayTags.h"
+#include "AbilitySystemInterface.h"
 
 UGA_Guard::UGA_Guard()
 {
@@ -74,6 +75,18 @@ void UGA_Guard::ActivateAbility(
 
 	WaitHitTask->EventReceived.AddDynamic(this, &UGA_Guard::OnHitBlockReceived);
 	WaitHitTask->ReadyForActivation();
+
+	// 弾きを成功させたときのタスク
+	UAbilityTask_WaitGameplayEvent* WaitParryTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		CombatGameplayTags::CGTAG_EVENT_Combat_ParrySuccess,
+		nullptr,
+		false,
+		true
+	);
+
+	WaitParryTask->EventReceived.AddDynamic(this, &UGA_Guard::OnParrySuccessReceived);
+	WaitParryTask->ReadyForActivation();
 }
 
 void UGA_Guard::EndAbility(
@@ -119,4 +132,41 @@ void UGA_Guard::OnInputReleased(float TImeHeld)
 void UGA_Guard::OnHitBlockReceived(FGameplayEventData Payload)
 {
 	MontageJumpToSection(HitSectionName);
+}
+
+void UGA_Guard::OnParrySuccessReceived(FGameplayEventData Payload)
+{
+	ACombatCharacterBase* Character = GetCombatCharacter();
+	if (!Character)
+		return;
+
+	UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character);
+	if (!SourceASC)
+		return;
+
+	AActor* TargetActor = const_cast<AActor*>(Payload.Instigator.Get());
+	UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor);
+	
+	if (!TargetASC)
+		return;
+
+	FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
+	EffectContext.AddInstigator(Character, Character);
+
+	if (!ParryEffect)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UGA_Guard] ParryEffect is not set on %s"), *GetName());
+		return;
+	}
+
+	FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(ParryEffect, 1.0f, EffectContext);
+	if (!SpecHandle.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[UGA_Guard] Failed to MakeOutgoingSpec"));
+		return;
+	}
+	// TODO: キャラ毎のパラメータに変更する
+	SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health, 0.0f);
+	SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, 10.0f);
+	SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
 }

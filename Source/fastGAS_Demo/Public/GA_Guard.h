@@ -48,6 +48,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	float ParrySec = 0.25f;
 
+	// 弾きを成功させたときのGameplayEffect
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	TSubclassOf<UGameplayEffect> ParryEffect;
+
 private:
 	bool IsReleasedParry = false;
 	
@@ -59,4 +63,7 @@ private:
 
 	UFUNCTION()
 	void OnHitBlockReceived(FGameplayEventData Payload);
+
+	UFUNCTION()
+	void OnParrySuccessReceived(FGameplayEventData Payload);
 };
