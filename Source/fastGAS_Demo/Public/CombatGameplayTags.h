@@ -11,6 +11,7 @@ namespace CombatGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Evaluate); // 入力を評価(先行入力用)
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HitBlock); // 攻撃を防いだイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_ParrySuccess); // 弾きを成功させたイベント
 
 	// StateTreeイベント用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Cancellable_Attack); // 攻撃キャンセル可能を通知

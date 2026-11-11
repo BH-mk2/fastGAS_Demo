@@ -8,6 +8,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HitBlock, "Event.Combat.HitBlock");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ParrySuccess, "Event.Combat.ParrySuccess"); // 弾きを成功させたイベント
 
 	// StateTreeイベント用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
