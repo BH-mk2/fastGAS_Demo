@@ -73,6 +73,9 @@ void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1, static_cast<int32>(ECombatAbilityInputID::Guard)));
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Guard)
+		.AddUObject(this, &ASamuraiCharacter::OnGuardTagChanged);
 }
 
 void ASamuraiCharacter::Tick(float DeltaSeconds)
@@ -352,6 +355,13 @@ void ASamuraiCharacter::LockOff()
 void ASamuraiCharacter::OnTargetDestroyed(AActor* DestroyedActor)
 {
 	LockOff();
+}
+
+void ASamuraiCharacter::OnGuardTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	const bool bIsGuarded = NewCount > 0;
+
+	OnGuardedStateChanged.Broadcast(bIsGuarded);
 }
 
 TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()

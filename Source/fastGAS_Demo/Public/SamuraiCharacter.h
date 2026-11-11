@@ -10,6 +10,7 @@ class USpringArmComponent;
 class UCameraComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnArmedStateChangedSignature, bool, bNewIsArmed);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardedStateChangedSignature, bool, bNewIsGuarded);
 
 /**
  * 
@@ -36,6 +37,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
 	FOnArmedStateChangedSignature OnArmedStateChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Combat|Events")
+	FOnGuardedStateChangedSignature OnGuardedStateChanged;
 
 	void ExecAttack();
 	void ExecDodge();
@@ -117,4 +121,7 @@ private:
 	void OnTargetDestroyed(AActor* DestroyedActor);
 
 	FVector DesiredMoveDirection = FVector::ZeroVector;
+
+	UFUNCTION()
+	void OnGuardTagChanged(FGameplayTag Tag, int32 NewCount);
 };
