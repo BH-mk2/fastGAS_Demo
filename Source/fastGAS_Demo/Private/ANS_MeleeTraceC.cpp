@@ -147,9 +147,62 @@ void UANS_MeleeTraceC::FInnerProcessor::ProcessDirect()
 void UANS_MeleeTraceC::FInnerProcessor::ProcessGuard()
 {
 	// 自分はガードされて、相手はガードできた状態
+
+	const float PostureValue = Context.DamagePostureMagnitude / 2.0f;
+
+	// 攻撃を防いだイベントを発行
+	{
+		FGameplayEventData Payload;
+		Payload.Instigator = &Src;
+		Payload.Target = &Target;
+		Payload.EventMagnitude = PostureValue;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(&Target, CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock, Payload);
+	}
+
+	// 相手に体幹ダメージを与える
+	{
+		FGameplayEffectContextHandle EffectContext = SrcASC.MakeEffectContext();
+		EffectContext.AddInstigator(&Src, &Src);
+		EffectContext.AddHitResult(HitResult);
+
+		FGameplayEffectSpecHandle SpecHandle = SrcASC.MakeOutgoingSpec(Context.HitBlockedEffect, 1.0f, EffectContext);
+		if (SpecHandle.IsValid())
+		{
+			// TODO: 半減率は後でキャラのパラメータに変える
+			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, PostureValue);
+			SrcASC.ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), &TargetASC);
+		}
+	}
 }
 
 void UANS_MeleeTraceC::FInnerProcessor::ProcessParry()
 {
 	// 自分は弾かれて、相手は弾いた状態
+
+	// 攻撃を防いだイベントを発行
+	{
+		FGameplayEventData Payload;
+		Payload.Instigator = &Src;
+		Payload.Target = &Target;
+		Payload.EventMagnitude = 0;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(&Target, CombatGameplayTags::CGTAG_EVENT_Combat_HitBlock, Payload);
+	}
+
+	// 自分に体幹ダメージを与える
+	{
+		FGameplayEffectContextHandle EffectContext = SrcASC.MakeEffectContext();
+		EffectContext.AddInstigator(&Src, &Src);
+		EffectContext.AddHitResult(HitResult);
+
+		FGameplayEffectSpecHandle SpecHandle = SrcASC.MakeOutgoingSpec(Context.ParryEffect, 1.0f, EffectContext);
+		if (SpecHandle.IsValid())
+		{
+			// TODO: 半減率は後でキャラのパラメータに変える
+			const float PostureValue = Context.DamagePostureMagnitude / 2.0f;
+			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, PostureValue);
+			SrcASC.ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+		}
+	}
 }

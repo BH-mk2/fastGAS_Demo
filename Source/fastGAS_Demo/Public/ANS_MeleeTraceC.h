@@ -29,6 +29,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	TSubclassOf<UGameplayEffect> DirectHitEffect;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<UGameplayEffect> HitBlockedEffect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<UGameplayEffect> ParryEffect;
+
 	// TODO: 後で消す。（キャラのパラメータで行う為）
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	float DamageHealthMagnitude = -20.0f;
