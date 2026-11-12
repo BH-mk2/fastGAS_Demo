@@ -72,6 +72,11 @@ void ASamuraiCharacter::BeginPlay()
 
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Guard)
 		.AddUObject(this, &ASamuraiCharacter::OnGuardTagChanged);
+
+	if (!StaggerAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StaggerAbilityClass, 1));
 }
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {

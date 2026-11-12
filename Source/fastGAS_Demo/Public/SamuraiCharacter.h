@@ -49,7 +49,9 @@ public:
 	TWeakObjectPtr<AActor> SearchTarget();
 	void LockOff();
 	TWeakObjectPtr<AActor> GetLockedOnTarget();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StartGuard();
+	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StopGuard();
 
 protected:
@@ -102,6 +104,10 @@ protected:
 	/* ガード系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
+
+	/* 体幹崩れ系 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> StaggerAbilityClass;
 
 private:
 	void AttachWeaponToHand();
