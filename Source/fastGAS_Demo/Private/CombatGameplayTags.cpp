@@ -9,6 +9,7 @@ namespace CombatGameplayTags
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HitBlock, "Event.Combat.HitBlock");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ParrySuccess, "Event.Combat.ParrySuccess"); // 弾きを成功させたイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_PostureBroken, "Event.Combat.PostureBroken"); // 体幹が崩れたときのイベント
 
 	// StateTreeイベント用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
@@ -46,4 +47,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Direct, "GameplayCue.Hit.Direct");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Guard, "GameplayCue.Hit.Guard");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Parry, "GameplayCue.Hit.Parry");
+
+	/* Gameplay Abilities用 */
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Attack, "Ability.Attack");
 }
