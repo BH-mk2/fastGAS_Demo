@@ -3,6 +3,7 @@
 
 #include "CombatAttributeSet.h"
 #include "GameplayEffectExtension.h"
+#include "CombatGameplayTags.h"
 
 UCombatAttributeSet::UCombatAttributeSet()
 {
@@ -26,6 +27,25 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
     // 体幹（Posture）の場合も同様に制限
     else if (Data.EvaluatedData.Attribute == GetPostureAttribute())
     {
-        SetPosture(FMath::Clamp(GetPosture(), 0.0f, GetMaxPosture()));
+        const float NewPosture = FMath::Clamp(GetPosture(), 0.0f, GetMaxPosture());
+        SetPosture(NewPosture);
+
+        // 体幹崩れの処理を行う
+        if (NewPosture >= GetMaxPosture() && GetMaxPosture() > 0.0f)
+        {
+            UAbilitySystemComponent* ASC = &Data.Target;
+            if (!ASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered))
+            {
+                FGameplayEventData Payload;
+                Payload.Instigator = Data.EffectSpec.GetContext().GetInstigator();
+                Payload.Target = ASC->GetAvatarActor();
+
+                UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+                    ASC->GetAvatarActor(),
+                    CombatGameplayTags::CGTAG_EVENT_Combat_PostureBroken,
+                    Payload
+                );
+            }
+        }
     }
 }
