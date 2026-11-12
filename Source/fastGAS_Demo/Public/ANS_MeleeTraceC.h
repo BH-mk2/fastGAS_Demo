@@ -8,6 +8,8 @@
 #include "GameplayEffect.h"
 #include "ANS_MeleeTraceC.generated.h"
 
+class ICombatInterface;
+
 /**
  * 
  */
@@ -25,12 +27,41 @@ public:
 	float Radius = 30.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
-	TSubclassOf<UGameplayEffect> DamageEffect;
+	TSubclassOf<UGameplayEffect> DirectHitEffect;
 
+	// TODO: 後で消す。（キャラのパラメータで行う為）
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="GAS")
 	float DamageHealthMagnitude = -20.0f;
 
+	// TODO: 後で消す。（キャラのパラメータで行う為）
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	float DamagePostureMagnitude = 20.0f;
 private:
+	void HitProcess(AActor* Owner, ICombatInterface* CombatInterface, TArray<FHitResult>& Hits);
+	enum class EHitKind
+	{
+		Direct,
+		Guard,
+		Parry,
+	};
+	EHitKind CheckHitResult(AActor& Src, UAbilitySystemComponent& SrcASC, AActor & Target, UAbilitySystemComponent& TargetASC);
+
+	class FInnerProcessor
+	{
+	public:
+		explicit FInnerProcessor(UANS_MeleeTraceC& Context, AActor& Src, UAbilitySystemComponent& SrcASC, AActor& Target, UAbilitySystemComponent& TargetASC, FHitResult& HitResult);
+		// 自分が相手に直撃させたときの処理
+		void ProcessDirect();
+		// 自分が相手にガードさせたときの処理
+		void ProcessGuard();
+		// 自分が相手に弾きさせたときの処理
+		void ProcessParry();
+	private:
+		UANS_MeleeTraceC& Context;
+		AActor& Src;
+		UAbilitySystemComponent& SrcASC;
+		AActor& Target;
+		UAbilitySystemComponent& TargetASC;
+		FHitResult& HitResult;
+	};
 };

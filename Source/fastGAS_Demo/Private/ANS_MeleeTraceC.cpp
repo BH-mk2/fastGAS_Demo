@@ -47,45 +47,109 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::None, OutHits, true);
 	if (bHit)
 	{
-		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner);
-		if (!SourceASC)
+		HitProcess(Owner, CombatInterface, OutHits);
+	}
+}
+
+void UANS_MeleeTraceC::HitProcess(AActor* Owner, ICombatInterface* CombatInterface, TArray<FHitResult>& Hits)
+{
+	UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Owner);
+	if (!SourceASC)
+	{
+		ensureMsgf(SourceASC != nullptr, TEXT("[ANS_MeleeTrace] Owner has not ASC."));
+		return;
+	}
+
+	for (auto& Hit : Hits)
+	{
+		AActor* HitActor = Hit.GetActor();
+		const bool IsAdded = CombatInterface->AddHitActor(HitActor);
+
+		if (!IsAdded)
+			continue;
+
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
+		if (!TargetASC)
+			continue;
+
+		// 自分と相手の向きによってガード/弾き/直撃成立の処理を分岐する
+		EHitKind HitKind = CheckHitResult(*Owner, *SourceASC, *HitActor, *TargetASC);
+		FInnerProcessor InnerProcessor(*this, *Owner, *SourceASC, *HitActor, *TargetASC, Hit);
+		switch (HitKind)
 		{
-			ensureMsgf(SourceASC!=nullptr, TEXT("[ANS_MeleeTrace] Owner has not ASC."));
-			return;
-		}
-
-		for (auto& Hit : OutHits)
-		{
-			AActor* HitActor = Hit.GetActor();
-			const bool IsAdded = CombatInterface->AddHitActor(HitActor);
-
-			if (!IsAdded)
-				continue;
-
-			// 直撃時の処理
-			UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(HitActor);
-			if (!TargetASC)
-				continue;
-
-			FGameplayEffectContextHandle EffectContext = SourceASC->MakeEffectContext();
-			EffectContext.AddHitResult(Hit);
-			EffectContext.AddInstigator(Owner, Owner);
-
-			if (!DamageEffect)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[ANS_MeleeTrace] DamageEffect is not set on %s"), *GetName());
-				return;
-			}
-
-			FGameplayEffectSpecHandle SpecHandle = SourceASC->MakeOutgoingSpec(DamageEffect, 1.0f, EffectContext);
-			if (!SpecHandle.IsValid())
-			{
-				UE_LOG(LogTemp, Warning, TEXT("[ANS_MeleeTrace] Failed to MakeOutgoingSpec"));
-				return;
-			}
-			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health, DamageHealthMagnitude);
-			SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, DamagePostureMagnitude);
-			SourceASC->ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), TargetASC);
+		case UANS_MeleeTraceC::EHitKind::Direct:
+			InnerProcessor.ProcessDirect();
+			break;
+		case UANS_MeleeTraceC::EHitKind::Guard:
+			InnerProcessor.ProcessGuard();
+			break;
+		case UANS_MeleeTraceC::EHitKind::Parry:
+			InnerProcessor.ProcessParry();
+			break;
+		default:
+			break;
 		}
 	}
+}
+
+UANS_MeleeTraceC::EHitKind UANS_MeleeTraceC::CheckHitResult(AActor& Src, UAbilitySystemComponent& SrcASC, AActor& Target, UAbilitySystemComponent& TargetASC)
+{
+	// 互いの向きが正面/背後か判定
+	const bool bIsFront = [&]()
+		{
+			const FVector ToSource = (Src.GetActorLocation() - Target.GetActorLocation()).GetSafeNormal2D();
+			const FVector TargetForward = Target.GetActorForwardVector().GetSafeNormal2D();
+			const float DotProduct = FVector::DotProduct(ToSource, TargetForward);
+
+			return DotProduct > 0.0f;
+		}();
+
+	// 背後の場合は直撃成立
+	if (!bIsFront)
+		return EHitKind::Direct;
+
+	// 正面かつ弾きタグを持っている場合は弾き成立
+	const bool bIsParrying = TargetASC.HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Parry);
+
+	if (bIsParrying)
+		return EHitKind::Parry;
+
+	// 正面かつガード判定タグを持っている場合はガード成立
+	const bool bIsGuarding = TargetASC.HasMatchingGameplayTag(CombatGameplayTags::CGTAG_COMBAT_Defense_Guard);
+
+	if (bIsGuarding)
+		return EHitKind::Guard;
+
+	return EHitKind::Direct;
+}
+
+UANS_MeleeTraceC::FInnerProcessor::FInnerProcessor(UANS_MeleeTraceC& Context, AActor& Src, UAbilitySystemComponent& SrcASC, AActor& Target, UAbilitySystemComponent& TargetASC, FHitResult& HitResult)
+	:Context(Context), Src(Src), SrcASC(SrcASC), Target(Target), TargetASC(TargetASC), HitResult(HitResult)
+{
+}
+
+void UANS_MeleeTraceC::FInnerProcessor::ProcessDirect()
+{
+	// 相手にダメージを与える
+	FGameplayEffectContextHandle EffectContext = SrcASC.MakeEffectContext();
+	EffectContext.AddInstigator(&Src, &Src);
+	EffectContext.AddHitResult(HitResult);
+
+	FGameplayEffectSpecHandle SpecHandle = SrcASC.MakeOutgoingSpec(Context.DirectHitEffect, 1.0f, EffectContext);
+	if (SpecHandle.IsValid())
+	{
+		SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Health, Context.DamageHealthMagnitude);
+		SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, Context.DamagePostureMagnitude);
+		SrcASC.ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), &TargetASC);
+	}
+}
+
+void UANS_MeleeTraceC::FInnerProcessor::ProcessGuard()
+{
+	// 自分はガードされて、相手はガードできた状態
+}
+
+void UANS_MeleeTraceC::FInnerProcessor::ProcessParry()
+{
+	// 自分は弾かれて、相手は弾いた状態
 }
