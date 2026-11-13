@@ -41,6 +41,13 @@ void UGA_Guard::ActivateAbility(
 	ASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Parry);
 	GetWorld()->GetTimerManager().SetTimer(ParryTimerHandle, this, &UGA_Guard::ReleaseParry, ParrySec, false);
 
+	// ガード中常時発動するGEを起動
+	{
+		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+		FGameplayEffectSpecHandle Spec = ASC->MakeOutgoingSpec(PassiveGuardEffect, 1.0f, Context);
+		PassiveGuardEffectHandle = ASC->ApplyGameplayEffectSpecToSelf(*Spec.Data.Get());
+	}
+
 	MontageTask->OnCompleted.AddDynamic(this, &UGA_Guard::OnMontageEnded);
 	MontageTask->OnBlendOut.AddDynamic(this, &UGA_Guard::OnMontageEnded);
 	MontageTask->OnInterrupted.AddDynamic(this, &UGA_Guard::OnMontageEnded);
@@ -96,6 +103,18 @@ void UGA_Guard::EndAbility(
 	if (!IsReleasedParry)
 	{
 		ReleaseParry();
+	}
+
+	{
+		if (ACombatCharacterBase* Character = GetCombatCharacter())
+		{
+			if (UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Character))
+			{
+				SourceASC->RemoveActiveGameplayEffect(PassiveGuardEffectHandle);
+			}
+		}
+		PassiveGuardEffectHandle.Invalidate();
+
 	}
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);

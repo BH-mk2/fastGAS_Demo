@@ -52,6 +52,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	TSubclassOf<UGameplayEffect> ParryEffect;
 
+	// ガード中の常駐GameplayEffect
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
+	TSubclassOf<UGameplayEffect> PassiveGuardEffect;
+
 private:
 	bool IsReleasedParry = false;
 	
@@ -66,4 +70,6 @@ private:
 
 	UFUNCTION()
 	void OnParrySuccessReceived(FGameplayEventData Payload);
+
+	FActiveGameplayEffectHandle PassiveGuardEffectHandle;
 };
