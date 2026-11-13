@@ -12,6 +12,17 @@ UCombatAttributeSet::UCombatAttributeSet()
 	InitMaxHealth(100.0f);
 	InitPosture(0.0f);
 	InitMaxPosture(100.0f);
+    InitMoveSpeed(300.0f);
+}
+
+void UCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
+{
+    Super::PreAttributeChange(Attribute, NewValue);
+
+    if (Attribute == GetMoveSpeedAttribute())
+    {
+        NewValue = FMath::Max(NewValue, 0.0f);
+    }
 }
 
 void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)

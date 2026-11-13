@@ -24,6 +24,7 @@ class FASTGAS_DEMO_API UCombatAttributeSet : public UAttributeSet
 public:
 	UCombatAttributeSet();
 
+	void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
 
 	// 1. 体力（Health）
@@ -45,4 +46,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes")
 	FGameplayAttributeData MaxPosture;
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, MaxPosture);
+
+	// 5. 移動速度（MoveSpeed）
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Movement")
+	FGameplayAttributeData MoveSpeed;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, MoveSpeed);
 };
