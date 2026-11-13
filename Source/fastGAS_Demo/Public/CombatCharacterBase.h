@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "GameplayEffectTypes.h"
 #include "CombatInterface.h"
 #include "AbilitySystemComponent.h"
 #include "CombatCharacterBase.generated.h"
@@ -70,4 +71,6 @@ protected:
 private:
 	// 衝突判定用のヒット済みActorリスト
 	TArray<TWeakObjectPtr<AActor>> HitActors;
+
+	void OnMoveSpeedChanged(const FOnAttributeChangeData& Data);
 };

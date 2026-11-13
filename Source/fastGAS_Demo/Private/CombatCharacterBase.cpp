@@ -2,6 +2,9 @@
 
 
 #include "CombatCharacterBase.h"
+
+#include "GameFramework/CharacterMovementComponent.h"
+
 #include "CombatAttributeSet.h"
 #include "WeaponBase.h"
 
@@ -29,6 +32,18 @@ void ACombatCharacterBase::BeginPlay()
 
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachToSocketName);
+
+	if (AbilitySystemComponent && AttributeSet)
+	{
+		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
+			UCombatAttributeSet::GetMoveSpeedAttribute()
+		).AddUObject(this, &ACombatCharacterBase::OnMoveSpeedChanged);
+
+		if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+		{
+			CMC->MaxWalkSpeed = AttributeSet->GetMoveSpeed();
+		}
+	}
 }
 
 void ACombatCharacterBase::PossessedBy(AController* NewController)
@@ -93,5 +108,13 @@ void ACombatCharacterBase::InitializeDefaultAttributes()
 	if (SpecHandle.IsValid())
 	{
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
+	}
+}
+
+void ACombatCharacterBase::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		CMC->MaxWalkSpeed = Data.NewValue;
 	}
 }
