@@ -65,6 +65,11 @@ void ASamuraiCharacter::BeginPlay()
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
 
+	if (!SprintAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(SprintAbilityClass, 1));
+
 	if (!GuardAbilityClass)
 		return;
 
@@ -220,7 +225,19 @@ void ASamuraiCharacter::ExecAttack()
 
 void ASamuraiCharacter::ExecDodge()
 {
-	AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+	// AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(DodgeAbilityTag));
+}
+
+void ASamuraiCharacter::HoldSprintInput()
+{
+  	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(SprintAbilityTag));
+}
+
+void ASamuraiCharacter::ReleaseSprintInput()
+{
+	FGameplayTagContainer SprintTags(SprintAbilityTag);
+	AbilitySystemComponent->CancelAbilities(&SprintTags);
 }
 
 void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)

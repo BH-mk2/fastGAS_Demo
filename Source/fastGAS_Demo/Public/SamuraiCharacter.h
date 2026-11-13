@@ -43,7 +43,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void ExecAttack();
+	
 	void ExecDodge();
+	void HoldSprintInput();
+	void ReleaseSprintInput();
+
 	void RequestMove(const FVector& WorldDirection, float Scale);
 	void ToggleLockOnTarget();
 	TWeakObjectPtr<AActor> SearchTarget();
@@ -53,6 +57,7 @@ public:
 	void StartGuard();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StopGuard();
+
 
 protected:
 	virtual void BeginPlay() override;
@@ -100,6 +105,15 @@ protected:
 	/* 回避系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS|Tags")
+	FGameplayTag DodgeAbilityTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> SprintAbilityClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS|Tags")
+	FGameplayTag SprintAbilityTag;
 
 	/* ガード系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
