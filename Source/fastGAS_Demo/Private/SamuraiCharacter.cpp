@@ -289,19 +289,31 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 	// ② 攻撃中など：足が止まっている状態
 	else
 	{
-		// 足は止まっているが、初動の向き調整ウィンドウが開いている時だけ手動で回す
-		// 即座に回転して良い場合
-		if (bCanInstantRotate)
+		// ロックオンしている場合は優先してターゲット先に向きを変える
+		if (auto Target = LockedOnTarget.Get())
 		{
-			SetActorRotation(FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f));
-		}
-		else if(bCanSmoothRotate)
-		{
-			// 滑らかに向きを変える
 			const FRotator CurrentRot = GetActorRotation();
-			const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
+			const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
 			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
 			SetActorRotation(NewRot);
+		}
+		else
+		{
+			// 足は止まっているが、初動の向き調整ウィンドウが開いている時だけ手動で回す
+			// 即座に回転して良い場合
+			if (bCanInstantRotate)
+			{
+				SetActorRotation(FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f));
+			}
+			else if (bCanSmoothRotate)
+			{
+				// 滑らかに向きを変える
+				const FRotator CurrentRot = GetActorRotation();
+				const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
+				const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+				SetActorRotation(NewRot);
+			}
 		}
 	}
 }
