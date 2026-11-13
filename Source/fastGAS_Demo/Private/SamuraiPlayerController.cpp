@@ -48,7 +48,10 @@ void ASamuraiPlayerController::SetupInputComponent()
 
 	if (DodgeAction)
 	{
-		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_Dodge);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &ASamuraiPlayerController::Input_DodgeStarted);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Triggered, this, &ASamuraiPlayerController::Input_DodgeTriggered);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Completed, this, &ASamuraiPlayerController::Input_DodgeReleased);
+		EnhancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Canceled, this, &ASamuraiPlayerController::Input_DodgeReleased);
 	}
 
 	if (GuardAction)
@@ -172,17 +175,29 @@ void ASamuraiPlayerController::Input_Lock(const FInputActionValue& Value)
 	ControlledCharacter->ToggleLockOnTarget();
 }
 
-void ASamuraiPlayerController::Input_Dodge(const FInputActionValue& Value)
+void ASamuraiPlayerController::Input_DodgeStarted(const FInputActionValue& Value)
 {
-	const bool bIsPush = Value.Get<bool>();
-
-	if (bIsPush)
-	{
-		if (!ControlledCharacter)
-			return;
-		ControlledCharacter->ExecDodge();
+	if (!ControlledCharacter)
 		return;
-	}
+	ControlledCharacter->ExecDodge();
+}
+
+void ASamuraiPlayerController::Input_DodgeTriggered(const FInputActionValue& Value)
+{
+	UEnhancedPlayerInput* EPI = Cast<UEnhancedPlayerInput>(PlayerInput);
+	if (!EPI)
+		return;
+
+	const FVector2D MoveInput = EPI->GetActionValue(MoveAction).Get<FVector2D>();
+	if (MoveInput.IsNearlyZero())
+		return;
+
+	ControlledCharacter->HoldSprintInput();
+}
+
+void ASamuraiPlayerController::Input_DodgeReleased(const FInputActionValue& Value)
+{
+	ControlledCharacter->ReleaseSprintInput();
 }
 
 void ASamuraiPlayerController::OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount)

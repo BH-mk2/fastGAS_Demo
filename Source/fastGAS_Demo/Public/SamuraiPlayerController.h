@@ -65,7 +65,9 @@ private:
 	void Input_Look(const FInputActionValue& Value);
 	void Input_Attack(const FInputActionValue& Value);
 	void Input_Lock(const FInputActionValue& Value);
-	void Input_Dodge(const FInputActionValue& Value);
+	void Input_DodgeStarted(const FInputActionValue& Value);
+	void Input_DodgeTriggered(const FInputActionValue& Value);
+	void Input_DodgeReleased(const FInputActionValue& Value);
 	void Input_Guard(const FInputActionValue& Value);
 
 	UFUNCTION()
