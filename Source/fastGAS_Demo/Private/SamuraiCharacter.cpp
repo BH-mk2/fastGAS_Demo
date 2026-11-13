@@ -82,6 +82,11 @@ void ASamuraiCharacter::BeginPlay()
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StaggerAbilityClass, 1));
+
+	if (!DirectHitReactAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DirectHitReactAbilityClass, 1));
 }
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {

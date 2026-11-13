@@ -123,6 +123,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> StaggerAbilityClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> DirectHitReactAbilityClass;
+
 private:
 	void AttachWeaponToHand();
 
