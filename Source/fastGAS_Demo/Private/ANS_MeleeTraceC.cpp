@@ -142,6 +142,20 @@ void UANS_MeleeTraceC::FInnerProcessor::ProcessDirect()
 		SpecHandle.Data->SetSetByCallerMagnitude(CombatGameplayTags::CGTAG_DATA_Damage_Posture, Context.DamagePostureMagnitude);
 		SrcASC.ApplyGameplayEffectSpecToTarget(*SpecHandle.Data.Get(), &TargetASC);
 	}
+
+	{
+		FGameplayEventData EventData;
+		EventData.EventTag = CombatGameplayTags::CGTAG_EVENT_Combat_DirectHitReact;
+		EventData.Instigator = &Src;
+		EventData.Target = &Target;
+		EventData.ContextHandle = EffectContext;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			&Target,
+			CombatGameplayTags::CGTAG_EVENT_Combat_DirectHitReact,
+			EventData
+		);
+	}
 }
 
 void UANS_MeleeTraceC::FInnerProcessor::ProcessGuard()
