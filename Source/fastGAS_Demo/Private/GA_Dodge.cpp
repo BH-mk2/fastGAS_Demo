@@ -41,7 +41,7 @@ void UGA_Dodge::ActivateAbility(
 	const FVector DesiredDir = Character->GetDesiredMoveDirection();
 	UE_LOG(LogTemp, Warning, TEXT("UGA_Dodge: DesiredDir: %s"), *DesiredDir.ToCompactString());
 
-	// TODO: 向きによって再生するモンタージュを変える
+	// 向きによって再生するモンタージュを変える
 	// 1. 入力がない場合、後ろステップ
 	// 2. 真横の場合、左右ステップ
 	// 3. 前方±45度の場合、アクタの向きを入力方向に変えてその方向に向かって前ステップ
