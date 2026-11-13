@@ -253,6 +253,7 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
 	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);
 	const bool bCanInstantRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_InstantWindow);
+	const bool bIsSprinting = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Sprint);
 
 	const float TurnAroundSpeed = 10.0f;
 
@@ -265,11 +266,22 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 			// ロックオン中は方向入力があった場合、ターゲットの方向に回転する
 			if (!WorldDirection.IsNearlyZero())
 			{
-				const FRotator CurrentRot = GetActorRotation();
-				const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-				const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
-				const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
-				SetActorRotation(NewRot);
+				// ただし、走り中は入力した方向を向く
+				if (bIsSprinting)
+				{
+					const FRotator CurrentRot = GetActorRotation();
+					const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
+					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+					SetActorRotation(NewRot);
+				}
+				else
+				{
+					const FRotator CurrentRot = GetActorRotation();
+					const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+					const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
+					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+					SetActorRotation(NewRot);
+				}
 			}
 		}
 		AddMovementInput(WorldDirection, Scale);
