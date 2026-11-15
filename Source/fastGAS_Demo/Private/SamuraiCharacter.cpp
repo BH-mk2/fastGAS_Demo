@@ -455,7 +455,7 @@ TObjectPtr<AActor> ASamuraiCharacter::FindDeathblowTarget()
 	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn)};
 	const TArray<AActor*> ActorsToIgnore = { this };
 	TArray<AActor*> OutActors;
-	bool bRet = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), DeathblowRadius, ObjectTypes, nullptr, ActorsToIgnore, OutActors);
+	bool bRet = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), DeathblowSearchRadius, ObjectTypes, nullptr, ActorsToIgnore, OutActors);
 
 	if (!bRet)
 		return Ret;

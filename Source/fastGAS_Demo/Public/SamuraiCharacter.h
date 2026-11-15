@@ -8,6 +8,7 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UDeathblowAction;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnArmedStateChangedSignature, bool, bNewIsArmed);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardedStateChangedSignature, bool, bNewIsGuarded);
@@ -58,6 +59,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StopGuard();
 
+	UDeathblowAction* GetDeathblowAction() { return DeathblowAction; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -106,7 +108,10 @@ protected:
 	TSubclassOf<class UCombatGameplayAbility> DeathblowAbilityClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	float DeathblowRadius = 100.0f;
+	float DeathblowSearchRadius = 100.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Deathblow")
+	TObjectPtr<class UDeathblowAction> DeathblowAction;
 
 	/* 回避系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
