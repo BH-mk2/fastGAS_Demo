@@ -94,6 +94,11 @@ void ASamuraiCharacter::BeginPlay()
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DirectHitReactAbilityClass, 1));
+
+	if (!DeathAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathAbilityClass, 1));
 }
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {

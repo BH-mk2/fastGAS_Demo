@@ -132,6 +132,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> DirectHitReactAbilityClass;
 
+	/* 死亡系 */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> DeathAbilityClass;
+
 private:
 	void AttachWeaponToHand();
 
