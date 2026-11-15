@@ -6,6 +6,8 @@
 #include "CombatGameplayAbility.h"
 #include "GA_Deathblow.generated.h"
 
+class UDeathblowAction;
+
 /**
  * 
  */
@@ -15,9 +17,15 @@ class FASTGAS_DEMO_API UGA_Deathblow : public UCombatGameplayAbility
 	GENERATED_BODY()
 	
 public:
-	/*
 	virtual void ActivateAbility(
 		const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-	//*/
+
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
+
+private:
+	UFUNCTION()
+	void OnDeathblowActionFinished();
+
+	TWeakObjectPtr<UDeathblowAction> ActiveDeathblowAction;
 };
