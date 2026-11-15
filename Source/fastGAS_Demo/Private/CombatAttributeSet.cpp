@@ -33,6 +33,26 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
     if (Data.EvaluatedData.Attribute == GetHealthAttribute())
     {
         SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
+
+        if (GetHealth() <= 0.0f)
+        {
+            UAbilitySystemComponent* ASC = &Data.Target;
+            if (ASC && !ASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead))
+            {
+                FGameplayEventData Payload;
+                Payload.EventTag = CombatGameplayTags::CGTAG_EVENT_Combat_HealthBroken;
+                Payload.Instigator = Data.EffectSpec.GetContext().GetInstigator();
+                Payload.Target = ASC->GetAvatarActor();
+
+                Data.EffectSpec.GetAllAssetTags(Payload.InstigatorTags);
+
+                UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+                    ASC->GetAvatarActor(),
+                    CombatGameplayTags::CGTAG_EVENT_Combat_HealthBroken,
+                    Payload
+                );
+            }
+        }
     }
 
     // 体幹（Posture）の場合も同様に制限
