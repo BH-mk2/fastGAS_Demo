@@ -53,6 +53,7 @@ namespace CombatGameplayTags
 
 	/* Gameplay Abilities用 */
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Attack, "Ability.Attack");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Deathblow, "Ability.Deathblow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Guard, "Ability.Guard");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Dodge, "Ability.Dodge");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Sprint, "Ability.Sprint");
