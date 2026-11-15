@@ -19,6 +19,8 @@ ASamuraiCharacter::ASamuraiCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	GetMesh()->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+
 	// コントローラの回転にキャラ本体を追従させない(カメラだけ回す)
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -59,6 +61,11 @@ void ASamuraiCharacter::BeginPlay()
 		return;
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
+
+	if (!DeathblowAbilityClass)
+		return;
+
+	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathblowAbilityClass, 1));
 
 	if (!DodgeAbilityClass)
 		return;
@@ -216,15 +223,35 @@ void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
 
 void ASamuraiCharacter::ExecAttack()
 {
-	if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack))
+	const bool bIsAttacking = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack);
+	const bool bCancellableAttack = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_Cancellable_Attack);
+
+	TObjectPtr<AActor> DeathblowTarget = FindDeathblowTarget();
+
+	if (bIsAttacking)
 	{
+		// 忍殺にキャンセルさせる
+		if (bCancellableAttack && DeathblowTarget)
+		{
+			ExecDeathblow(DeathblowTarget);
+			return;
+		}
 		// コンボ入力
 		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Attack, FGameplayEventData{});
+		return;
 	}
 	else
 	{
+		if (DeathblowTarget)
+		{
+			ExecDeathblow(DeathblowTarget);
+			return;
+		}
+
 		// 攻撃(ひと振り目)
 		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
+
+		return;
 	}
 }
 
@@ -413,6 +440,64 @@ void ASamuraiCharacter::OnGuardTagChanged(FGameplayTag Tag, int32 NewCount)
 	const bool bIsGuarded = NewCount > 0;
 
 	OnGuardedStateChanged.Broadcast(bIsGuarded);
+}
+
+TObjectPtr<AActor> ASamuraiCharacter::FindDeathblowTarget()
+{
+	TObjectPtr<AActor> Ret;
+
+	// 前方にごく小さいSweepを飛ばして体幹崩れ中タグを持っている敵を探す
+	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn)};
+	const TArray<AActor*> ActorsToIgnore = { this };
+	TArray<AActor*> OutActors;
+	bool bRet = UKismetSystemLibrary::SphereOverlapActors(GetWorld(), GetActorLocation(), DeathblowRadius, ObjectTypes, nullptr, ActorsToIgnore, OutActors);
+
+	if (!bRet)
+		return Ret;
+
+	AActor* BestTarget = nullptr;
+	float BestLength = std::numeric_limits<float>::max();
+	for (auto Hit : OutActors)
+	{
+		const FVector ForwardVec =  GetActorForwardVector();
+		const FVector DirectionToTargetVec = (Hit->GetActorLocation() - GetActorLocation());
+		const float DotProduct = FVector::DotProduct(ForwardVec, DirectionToTargetVec.GetSafeNormal2D());
+		
+		// 敵が自分の後ろにいる場合はスルー
+		if (DotProduct < 0.0f)
+			continue;
+
+		const UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Hit);
+		if (!ASC)
+			continue;
+
+		if (!ASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered))
+			continue;
+
+		const float Length = DirectionToTargetVec.Length();
+		if (Length > BestLength)
+			continue;
+		BestLength = Length;
+		BestTarget = Hit;
+	}
+
+	Ret = BestTarget;
+
+	return Ret;
+}
+
+void ASamuraiCharacter::ExecDeathblow(TObjectPtr<AActor> Target)
+{
+	FGameplayAbilityTargetData_ActorArray* ActorArrayData = new FGameplayAbilityTargetData_ActorArray();
+	ActorArrayData->TargetActorArray.Add(Target);
+
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	TargetDataHandle.Add(ActorArrayData);
+
+	FGameplayEventData Payload;
+	Payload.TargetData = TargetDataHandle;
+
+	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Deathblow, Payload);
 }
 
 TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()

@@ -102,6 +102,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	TSubclassOf<class UCombatGameplayAbility> DeathblowAbilityClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	float DeathblowRadius = 100.0f;
+
 	/* 回避系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
 	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
@@ -148,4 +154,8 @@ private:
 
 	UFUNCTION()
 	void OnGuardTagChanged(FGameplayTag Tag, int32 NewCount);
+
+	TObjectPtr<AActor> FindDeathblowTarget();
+
+	void ExecDeathblow(TObjectPtr<AActor> Target);
 };
