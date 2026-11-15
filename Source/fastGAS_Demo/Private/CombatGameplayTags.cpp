@@ -11,6 +11,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ParrySuccess, "Event.Combat.ParrySuccess"); // 弾きを成功させたイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_PostureBroken, "Event.Combat.PostureBroken"); // 体幹が崩れたときのイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_DirectHitReact, "Event.Combat.DirectHitReact"); // 攻撃が直撃したときのイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HealthBroken, "Event.Combat.HealthBroken"); // 体力が無くなったときのイベント
 
 	// StateTreeイベント用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
@@ -43,6 +44,9 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Health, "Data.Damage.Health");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Posture, "Data.Damage.Posture");
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DAMAGE_Type_Normal, "Damage.Type.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DAMAGE_Type_Deathblow, "Damage.Type.Deathblow");
+
 	// 判定用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_COMBAT_Defense_Guard, "Combat.Defense.Guard");
 
@@ -52,11 +56,14 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_GAMEPLAYCUE_Hit_Parry, "GameplayCue.Hit.Parry");
 
 	/* Gameplay Abilities用 */
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY, "Ability");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Attack, "Ability.Attack");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Deathblow, "Ability.Deathblow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Guard, "Ability.Guard");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Dodge, "Ability.Dodge");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Sprint, "Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Death, "Ability.Death");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Stagger, "Ability.Stagger");
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_DirectHitReact, "Ability.DirectHitReact");
 }
