@@ -4,6 +4,8 @@
 #include "SamuraiPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "Blueprint/UserWidget.h"
+
 #include "SamuraiCharacter.h"
 #include "CombatGameplayTags.h"
 
@@ -69,6 +71,15 @@ void ASamuraiPlayerController::OnPossess(APawn* InPawn)
 	auto ASC = ControlledCharacter->GetAbilitySystemComponent();
 	HandleForOnDodgeTagChanged = ASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge)
 		.AddUObject(this, &ASamuraiPlayerController::OnDodgeTagChanged);
+
+	if (MainHUDClass)
+	{
+		MainHUD = CreateWidget<UUserWidget>(GetWorld(), MainHUDClass, TEXT("MainHUD"));
+		if (!MainHUD)
+			return;
+
+		MainHUD->AddToViewport();
+	}
 }
 
 void ASamuraiPlayerController::OnUnPossess()

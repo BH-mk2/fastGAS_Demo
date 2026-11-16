@@ -11,6 +11,7 @@
 class ASamuraiCharacter;
 class UInputMappingContext;
 class UInputAction;
+class UUserWidget;
 
 /**
  * 
@@ -56,6 +57,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> GuardAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	TSubclassOf<UUserWidget> MainHUDClass;
+
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
@@ -73,4 +77,6 @@ private:
 	UFUNCTION()
 	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
 	FDelegateHandle HandleForOnDodgeTagChanged;
+
+	UUserWidget* MainHUD;
 };
