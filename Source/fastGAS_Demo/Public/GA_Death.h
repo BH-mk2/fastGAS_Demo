@@ -23,9 +23,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	UAnimMontage* DefaultDeathMontage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
-	UAnimMontage* DeathblowDeathMontage;
-
 	UFUNCTION()
 	void OnDeathMontageFinished();
 };

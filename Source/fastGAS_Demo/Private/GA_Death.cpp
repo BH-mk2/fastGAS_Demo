@@ -59,10 +59,11 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 
 	// 死亡モンタージュの再生
 	UAnimMontage* MontageToPlay = DefaultDeathMontage;
+	// 忍殺中だったら
 	if (TriggerEventData && TriggerEventData->InstigatorTags.HasTag(CombatGameplayTags::CGTAG_DAMAGE_Type_Deathblow))
 	{
-		if (DeathblowDeathMontage)
-			MontageToPlay = DeathblowDeathMontage;
+		// 再生そのものをスキップする
+		MontageToPlay = nullptr;
 	}
 
 	if (!MontageToPlay)
