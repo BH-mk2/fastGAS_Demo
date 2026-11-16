@@ -7,6 +7,15 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
+
+#include "MovieSceneSequencePlayer.h"
+#include "MovieSceneSequencePlaybackSettings.h"
+#include "LevelSequence.h"
+#include "LevelSequencePlayer.h"
+#include "LevelSequenceActor.h"
+#include "DefaultLevelSequenceInstanceData.h"
 
 #include "CombatGameplayTags.h"
 
@@ -218,4 +227,215 @@ void UDeathblowAction_Standard::UpdateCameraInterp()
 void UDeathblowAction_Standard::RestoreCamera()
 {
 	bIsZoomingIn = false;
+}
+
+void UDeathblowAction_Cinematic::Execute_Implementation(ACharacter* Attacker, ACharacter* Victim)
+{
+	Super::Execute_Implementation(Attacker, Victim);
+
+	UWorld* World = GetWorld();
+	if (!World || !Attacker || !Victim || !DeathblowSequence)
+	{
+		FinishAction();
+		return;
+	}
+
+	World->GetTimerManager().ClearTimer(CleanupTimerHandle);
+	CleanupSequenceActor();
+
+	bEffectApplied = false;
+
+	// インパクト用イベント待ち
+	if (UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Attacker))
+	{
+		ImpactEventHandle = SourceASC->GenericGameplayEventCallbacks
+			.FindOrAdd(CombatGameplayTags::CGTAG_EVENT_Combat_Deathblow_Impact)
+			.AddUObject(this, &UDeathblowAction_Cinematic::OnImpactEventReceived);
+	}
+
+	// LevelSequencePlayerの作成
+	FMovieSceneSequencePlaybackSettings Settings;
+	Settings.bAutoPlay = false;
+
+	ALevelSequenceActor* OutActor = nullptr;
+	SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(World, DeathblowSequence, Settings, OutActor);
+	if (!SequencePlayer || !OutActor)
+	{
+		OnSequenceFinished();
+		return;
+	}
+
+	CachedSequenceActor = OutActor;
+
+	// シーケンス内のタグに Attacker / Victimをバインド
+	if (!AttackerBindingTag.IsNone())
+	{
+		OutActor->SetBindingByTag(AttackerBindingTag, { Attacker });
+	}
+	if (!VictimBindingTag.IsNone())
+	{
+		OutActor->SetBindingByTag(VictimBindingTag, { Victim });
+	}
+
+	// 再生基準位置をターゲットの位置・向きに合わせる
+	if (bUseVictimTransformOrigin)
+	{
+		FTransform OriginTransform = Victim->GetActorTransform();
+		if (UCapsuleComponent* Capsule = Victim->GetCapsuleComponent())
+		{
+			FVector FootLocation = OriginTransform.GetLocation();
+			FootLocation.Z -= Capsule->GetScaledCapsuleHalfHeight();
+			OriginTransform.SetLocation(FootLocation);
+		}
+
+		OutActor->bOverrideInstanceData = true;
+		if(UDefaultLevelSequenceInstanceData* InstanceData = Cast<UDefaultLevelSequenceInstanceData>(OutActor->DefaultInstanceData))
+		{
+			InstanceData->TransformOrigin = OriginTransform;
+		}
+	}
+
+	Attacker->SetActorEnableCollision(false);
+	Victim->SetActorEnableCollision(false);
+
+	if (UCharacterMovementComponent* AttackerMove = Attacker->GetCharacterMovement())
+	{
+		AttackerMove->StopMovementImmediately();
+		AttackerMove->SetMovementMode(MOVE_None);
+	}
+
+	if (UCharacterMovementComponent* VictimMove = Victim->GetCharacterMovement())
+	{
+		VictimMove->StopMovementImmediately();
+		VictimMove->SetMovementMode(MOVE_None);
+	}
+
+	// シーケンス完了イベントのバインドと再生開始
+	SequencePlayer->OnFinished.AddDynamic(this, &UDeathblowAction_Cinematic::OnSequenceFinished);
+	SequencePlayer->Play();
+}
+
+void UDeathblowAction_Cinematic::FinishAction()
+{
+	if (!bEffectApplied)
+	{
+		OnImpactEventReceived(nullptr);
+		bEffectApplied = true;
+	}
+	Super::FinishAction();
+}
+
+void UDeathblowAction_Cinematic::OnImpactEventReceived(const FGameplayEventData* Payload)
+{
+	ApplyResultEffect();
+}
+
+void UDeathblowAction_Cinematic::OnSequenceFinished()
+{
+	if (CachedAttacker.IsValid() && ImpactEventHandle.IsValid())
+	{
+		if (UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedAttacker.Get()))
+		{
+			SourceASC->GenericGameplayEventCallbacks
+				.FindOrAdd(CombatGameplayTags::CGTAG_EVENT_Combat_Deathblow_Impact)
+				.Remove(ImpactEventHandle);
+		}
+		ImpactEventHandle.Reset();
+	}
+
+	if (CachedAttacker.IsValid())
+	{
+		CachedAttacker->SetActorEnableCollision(true);
+		if (UCharacterMovementComponent* AttackerMove = CachedAttacker->GetCharacterMovement())
+		{
+			AttackerMove->SetMovementMode(MOVE_Walking);
+		}
+	}
+
+	if (CachedVictim.IsValid())
+	{
+		// 敵がまだ生きている場合（ボス1ゲージ目削りなど）のみコリジョンと移動を復帰
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedVictim.Get());
+		const bool bIsDead = TargetASC && TargetASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead);
+		if (!bIsDead)
+		{
+			CachedVictim->SetActorEnableCollision(true);
+			if (UCharacterMovementComponent* VictimMove = CachedVictim->GetCharacterMovement())
+			{
+				VictimMove->SetMovementMode(MOVE_Walking);
+			}
+		}
+	}
+
+	if (SequencePlayer)
+	{
+		SequencePlayer->OnFinished.RemoveDynamic(this, &UDeathblowAction_Cinematic::OnSequenceFinished);
+		SequencePlayer = nullptr;
+	}
+
+	if (CachedAttacker.IsValid())
+	{
+		if (APlayerController* PC = Cast<APlayerController>(CachedAttacker->GetController()))
+		{
+			if (bSyncControlRotation)
+			{
+				if (AActor* CurrentViewTarget = PC->GetViewTarget())
+				{
+					FRotator EndCamRot = CurrentViewTarget->GetActorRotation();
+					EndCamRot.Roll = 0.0f;
+					PC->SetControlRotation(EndCamRot);
+				}
+			}
+			PC->SetViewTargetWithBlend(CachedAttacker.Get(), CameraBlendOutSeconds, VTBlend_Cubic);
+		}
+	}
+
+	if (UWorld* World = GetWorld())
+	{
+		const float DestroyDelay = FMath::Max(CameraBlendOutSeconds + 0.05f, 0.05f);
+		World->GetTimerManager().SetTimer(
+			CleanupTimerHandle,
+			this,
+			&UDeathblowAction_Cinematic::CleanupSequenceActor,
+			DestroyDelay,
+			false
+		);
+	}
+
+	FinishAction();
+}
+
+void UDeathblowAction_Cinematic::ApplyResultEffect()
+{
+	if (bEffectApplied)
+		return;
+
+	if (!CachedAttacker.IsValid() || !CachedVictim.IsValid())
+		return;
+
+	if (ResultGameplayEffect)
+	{
+		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedAttacker.Get());
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedVictim.Get());
+		if (SourceASC && TargetASC)
+		{
+			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
+			Context.AddSourceObject(this);
+			FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(ResultGameplayEffect, 1.0f, Context);
+			if (Spec.IsValid())
+			{
+				SourceASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
+				bEffectApplied = true;
+			}
+		}
+	}
+}
+
+void UDeathblowAction_Cinematic::CleanupSequenceActor()
+{
+	if (CachedSequenceActor.IsValid())
+	{
+		CachedSequenceActor->Destroy();
+		CachedSequenceActor.Reset();
+	}
 }

@@ -13,6 +13,9 @@ class UAnimMontage;
 class UGameplayEffect;
 class USpringArmComponent;
 class UCameraComponent;
+class ULevelSequence;
+class ULevelSequencePlayer;
+class ALevelSequenceActor;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathblowActionFinished);
 
@@ -53,10 +56,10 @@ public:
 	virtual void Execute_Implementation(ACharacter* Attacker, ACharacter* Victim) override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> AttackerMontage;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	UPROPERTY(EditAnywhere, Category = "Animation")
 	TObjectPtr<UAnimMontage> VictimMontage;
 
 	// 被害者から見た攻撃者の相対位置オフセット（正面距離など）
@@ -108,4 +111,62 @@ private:
 	float OriginalFOV = 90.0f;
 	bool bIsZoomingIn = false;
 	bool bDamageApplied = false;
+};
+
+UCLASS()
+class FASTGAS_DEMO_API UDeathblowAction_Cinematic : public UDeathblowAction
+{
+	GENERATED_BODY()
+
+public:
+	virtual void Execute_Implementation(ACharacter* Attacker, ACharacter* Victim) override;
+
+protected:
+	virtual void FinishAction() override;
+
+	// 再生するLevelSequenceアセット
+	UPROPERTY(EditAnywhere, Category = "Cinematic")
+	TObjectPtr<ULevelSequence> DeathblowSequence;
+
+	// 敵に適用するGameplayEffect
+	UPROPERTY(EditAnywhere, Category = "GAS")
+	TSubclassOf<UGameplayEffect> ResultGameplayEffect;
+
+	// シーケンス内のアクターバインディング用タグ
+	UPROPERTY(EditDefaultsOnly, Category = "Cinematic|Binding")
+	FName AttackerBindingTag = FName("Attacker");
+
+	UPROPERTY(EditDefaultsOnly, Category = "Cinematic|Binding")
+	FName VictimBindingTag = FName("Victim");
+
+	// trueの場合、ターゲットの現在位置と向きを原点としてシーケンスを再生する
+	UPROPERTY(EditAnywhere, Category = "Cinematic|Transform")
+	bool bUseVictimTransformOrigin = true;
+
+	// 終了時に元のカメラへ戻るブレンド時間
+	UPROPERTY(EditDefaultsOnly, Category = "Cinematic|Camera")
+	float CameraBlendOutSeconds = 0.4f;
+
+	// trueの場合、LS終了時のカメラの向きにプレイヤーの始点を同期する
+	UPROPERTY(EditAnywhere, Category = "Cinematic|Camera")
+	bool bSyncControlRotation = true;
+
+private:
+	void OnImpactEventReceived(const FGameplayEventData* Payload);
+
+	UFUNCTION()
+	void OnSequenceFinished();
+
+	void ApplyResultEffect();
+	void CleanupSequenceActor();
+
+	UPROPERTY(Transient)
+	TObjectPtr<ULevelSequencePlayer> SequencePlayer;
+
+	UPROPERTY(Transient)
+	TWeakObjectPtr<ALevelSequenceActor> CachedSequenceActor;
+
+	FDelegateHandle ImpactEventHandle;
+	FTimerHandle CleanupTimerHandle;
+	bool bEffectApplied = false;
 };
