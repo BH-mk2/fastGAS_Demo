@@ -11,6 +11,8 @@
 class ACharacter;
 class UAnimMontage;
 class UGameplayEffect;
+class USpringArmComponent;
+class UCameraComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathblowActionFinished);
 
@@ -65,8 +67,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "GAS")
 	TSubclassOf<UGameplayEffect> DeathblowDamageEffect;
 
+	// --- カメラ演出系 ---
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
+	bool bEnableCameraZoom = true;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (EditCondition = "bEnableCameraZoom"))
+	float ZoomArmLength = 220.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (EditCondition = "bEnableCameraZoom"))
+	FVector ZoomSocketOffset = FVector(0.0f, 45.0f, 10.0f);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (EditCondition = "bEnableCameraZoom"))
+	float ZoomFOV = 75.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Camera", meta = (EditCondition = "bEnableCameraZoom"))
+	float CameraInterpSpeed = 8.0f;
+
 	// 攻撃を当てたときのカメラ揺れアセット
-	UPROPERTY(EditDefaultsOnly, Category = "Direction")
+	UPROPERTY(EditDefaultsOnly, Category = "Camera")
 	TSubclassOf<UCameraShakeBase> ShakeClass;
 
 	virtual void FinishAction() override;
@@ -75,6 +93,19 @@ private:
 	void OnAttackerMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	void OnImpactEventReceived(const FGameplayEventData* Payload);
-
 	FDelegateHandle ImpactEventHandle;
+
+	void StartCameraZoom(ACharacter* Attacker);
+	void UpdateCameraInterp();
+	void RestoreCamera();
+	FTimerHandle CameraTimerHandle;
+
+	TWeakObjectPtr<USpringArmComponent> CachedSpringArm;
+	TWeakObjectPtr<UCameraComponent> CachedCamera;
+
+	float OriginalArmLength = 0.0f;
+	FVector OriginalSocketOffset = FVector::ZeroVector;
+	float OriginalFOV = 90.0f;
+	bool bIsZoomingIn = false;
+	bool bDamageApplied = false;
 };
