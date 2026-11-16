@@ -23,6 +23,8 @@ public class fastGAS_Demo : ModuleRules
 			"GameplayTags",
 			"GameplayTasks",
             "AnimGraphRuntime",
+			"LevelSequence",
+			"MovieScene",
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
