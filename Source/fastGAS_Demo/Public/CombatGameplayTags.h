@@ -5,25 +5,25 @@
 namespace CombatGameplayTags
 {
 	// イベント用
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Attack); // 攻撃の入力
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_GuardEnd); // 防御終了の入力
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Attack);	 // 攻撃の入力
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_GuardEnd);	 // 防御終了の入力
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Deathblow); // 忍殺の入力
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Evaluate); // 入力を評価(先行入力用)
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Input_Evaluate);	 // 入力を評価(先行入力用)
 
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HitBlock); // 攻撃を防いだイベント
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_ParrySuccess); // 弾きを成功させたイベント
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_PostureBroken); // 体幹が崩れたときのイベント
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_DirectHitReact); // 攻撃が直撃したときのイベント
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HealthBroken); // 体力が無くなったときのイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HitBlock);		 // 攻撃を防いだイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_ParrySuccess);	 // 弾きを成功させたイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_PostureBroken);	 // 体幹が崩れたときのイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_DirectHitReact);	 // 攻撃が直撃したときのイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HealthBroken);	 // 体力が無くなったときのイベント
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_Deathblow_Impact); // 忍殺で攻撃を当てたタイミングのイベント
 
 	// StateTreeイベント用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Cancellable_Attack); // 攻撃キャンセル可能を通知
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_GuardEnd); // 防御が解除されたことを通知
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Death); // 死亡したことを通知
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Revival); // 復活したことを通知
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Stagger); // 体幹が崩れたことを通知
-	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_UnStagger); // 体幹が回復ことを通知
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_GuardEnd);	  // 防御が解除されたことを通知
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Death);		  // 死亡したことを通知
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Revival);	  // 復活したことを通知
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_Stagger);	  // 体幹が崩れたことを通知
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Notify_UnStagger);	  // 体幹が回復ことを通知
 
 	// 状態用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Dead);

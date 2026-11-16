@@ -8,19 +8,19 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HitBlock, "Event.Combat.HitBlock");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ParrySuccess, "Event.Combat.ParrySuccess"); // 弾きを成功させたイベント
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_PostureBroken, "Event.Combat.PostureBroken"); // 体幹が崩れたときのイベント
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_DirectHitReact, "Event.Combat.DirectHitReact"); // 攻撃が直撃したときのイベント
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HealthBroken, "Event.Combat.HealthBroken"); // 体力が無くなったときのイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ParrySuccess, "Event.Combat.ParrySuccess");		  // 弾きを成功させたイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_PostureBroken, "Event.Combat.PostureBroken");		  // 体幹が崩れたときのイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_DirectHitReact, "Event.Combat.DirectHitReact");	  // 攻撃が直撃したときのイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HealthBroken, "Event.Combat.HealthBroken");		  // 体力が無くなったときのイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_Deathblow_Impact, "Event.Combat.Deathblow.Impact"); // 忍殺で攻撃を当てたタイミングのイベント
 
 	// StateTreeイベント用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Cancellable_Attack, "Event.State.Cancellable.Attack"); // 攻撃キャンセル可能を通知
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_GuardEnd, "Event.State.Notify.GuardEnd"); // 防御が解除されたことを通知
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Death, "Event.State.Notify.Death"); // 死亡したことを通知
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Revival, "Event.State.Notify.Revival"); // 復活したことを通知
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Stagger, "Event.State.Notify.Stagger"); // 体幹が崩れたことを通知
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_UnStagger, "Event.State.Notify.UnStagger"); // 体幹が回復ことを通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_GuardEnd, "Event.State.Notify.GuardEnd");		// 防御が解除されたことを通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Death, "Event.State.Notify.Death");				// 死亡したことを通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Revival, "Event.State.Notify.Revival");			// 復活したことを通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_Stagger, "Event.State.Notify.Stagger");			// 体幹が崩れたことを通知
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_State_Notify_UnStagger, "Event.State.Notify.UnStagger");		// 体幹が回復ことを通知
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Dead, "State.Dead");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Action, "State.Action");
