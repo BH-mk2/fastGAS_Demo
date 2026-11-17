@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystemComponent.h"
+#if WITH_EDITORONLY_DATA
+#include "Components/CapsuleComponent.h"
+#endif
 
 #include "CombatGameplayTags.h"
 
@@ -16,6 +19,14 @@ AEnemySpawner::AEnemySpawner()
 
 	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	SetRootComponent(Root);
+
+#if WITH_EDITORONLY_DATA
+	PreviewMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("PreviewMesh"));
+	PreviewMesh->SetupAttachment(Root);
+	PreviewMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	PreviewMesh->SetHiddenInGame(true);
+	PreviewMesh->bIsEditorOnly = true;
+#endif
 }
 
 void AEnemySpawner::SpawnEnemy()
@@ -78,6 +89,44 @@ void AEnemySpawner::BeginPlay()
 	{
 		SpawnEnemy();
 	}
+}
+
+void AEnemySpawner::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+
+#if WITH_EDITORONLY_DATA
+	if (!PreviewMesh)
+	{
+		return;
+	}
+
+	if (EnemyClass)
+	{
+		if (const ACharacter* DefaultChar = EnemyClass->GetDefaultObject<ACharacter>())
+		{
+			if (const USkeletalMeshComponent* DefaultMesh = DefaultChar->GetMesh())
+			{
+				PreviewMesh->SetSkeletalMesh(DefaultMesh->GetSkeletalMeshAsset());
+
+				FTransform MeshTransform = DefaultMesh->GetRelativeTransform();
+				if (const UCapsuleComponent* Capsule = DefaultChar->GetCapsuleComponent())
+				{
+					MeshTransform.AddToTranslation(FVector(0.0f, 0.0f, Capsule->GetScaledCapsuleHalfHeight()));
+				}
+				PreviewMesh->SetRelativeTransform(MeshTransform);
+
+				for (int32 i = 0; i < DefaultMesh->GetNumMaterials(); ++i)
+				{
+					PreviewMesh->SetMaterial(i, DefaultMesh->GetMaterial(i));
+				}
+				return;
+			}
+		}
+	}
+
+	PreviewMesh->SetSkeletalMesh(nullptr);
+#endif
 }
 
 // Called every frame

@@ -29,6 +29,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawner")
 	TSubclassOf<ACharacter> EnemyClass;
@@ -39,6 +40,11 @@ protected:
 	// リセット時に復活するかどうか
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawner")
 	bool bDoNotRespawnOnceDefeated = false;
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(VisibleAnywhere, Category = "Spawner")
+	TObjectPtr<USkeletalMeshComponent> PreviewMesh;
+#endif
 
 public:	
 	// Called every frame
