@@ -5,6 +5,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "PlayMontageCallbackProxy.h"
 #include "AbilitySystemComponent.h"
 #include "GameplayAbilitySpec.h"
@@ -14,6 +15,8 @@
 #include "WeaponBase.h"
 #include "CombatAbilityInputID.h"
 #include "CombatGameplayTags.h"
+#include "StageManagementSubsystem.h"
+#include "CombatAttributeSet.h"
 
 ASamuraiCharacter::ASamuraiCharacter()
 {
@@ -46,6 +49,65 @@ ASamuraiCharacter::ASamuraiCharacter()
 FVector ASamuraiCharacter::GetDesiredMoveDirection() const
 {
 	return DesiredMoveDirection;
+}
+
+void ASamuraiCharacter::RespawnAtCheckpoint()
+{
+	UStageManagementSubsystem* StageSubsystem = GetWorld()->GetSubsystem<UStageManagementSubsystem>();
+	if (!StageSubsystem)
+	{
+		return;
+	}
+
+	// 復活地点へワープ
+	FTransform RespawnTransform;
+	if (StageSubsystem->GetRespawnTransform(RespawnTransform))
+	{
+		SetActorTransform(RespawnTransform, false, nullptr, ETeleportType::TeleportPhysics);
+		if (AController* PC = GetController())
+		{
+			PC->SetControlRotation(RespawnTransform.GetRotation().Rotator());
+		}
+	}
+
+	// 死亡状態の解除
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
+	{
+		ASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Dead);
+		ASC->CancelAllAbilities();
+	}
+	SetActorEnableCollision(true);
+	StopAnimMontage();
+	if (USkeletalMeshComponent* MeshComp = GetMesh())
+	{
+		if (UAnimInstance* AnimInst = MeshComp->GetAnimInstance())
+		{
+			AnimInst->Montage_Stop(0.0f);
+		}
+	}
+
+	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
+	{
+		Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
+
+	if (DefaultAttributesEffect)
+	{
+		UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+		ASC->ApplyGameplayEffectToSelf(DefaultAttributesEffect.GetDefaultObject(), 1.0f, Context);
+	}
+	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
+	{
+		CMC->SetMovementMode(MOVE_Walking);
+		CMC->MaxWalkSpeed = AttributeSet->GetMoveSpeed();
+	}
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		EnableInput(PC);
+	}
+
+	StageSubsystem->ResetStage();
 }
 
 void ASamuraiCharacter::BeginPlay()
@@ -100,6 +162,17 @@ void ASamuraiCharacter::BeginPlay()
 
 	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathAbilityClass, 1));
 }
+void ASamuraiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (IsValid(Weapon))
+	{
+		Weapon->Destroy();
+		Weapon = nullptr;
+	}
+
+	Super::EndPlay(EndPlayReason);
+}
+
 void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
