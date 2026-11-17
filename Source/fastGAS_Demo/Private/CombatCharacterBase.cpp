@@ -97,13 +97,13 @@ void ACombatCharacterBase::InitializeDefaultAttributes()
 	if (!AbilitySystemComponent)
 		return;
 
-	if (!DefaultAttricutesEffect)
+	if (!DefaultAttributesEffect)
 		return;
 
 	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
 	EffectContext.AddSourceObject(this);
 
-	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttricutesEffect, 1.0f, EffectContext);
+	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributesEffect, 1.0f, EffectContext);
 
 	if (SpecHandle.IsValid())
 	{

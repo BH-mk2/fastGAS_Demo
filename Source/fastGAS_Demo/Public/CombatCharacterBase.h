@@ -52,7 +52,7 @@ protected:
 
 	// 初期ステータスを設定するGEのクラス
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
-	TSubclassOf<class UGameplayEffect> DefaultAttricutesEffect;
+	TSubclassOf<class UGameplayEffect> DefaultAttributesEffect;
 
 	// 武器クラス
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
