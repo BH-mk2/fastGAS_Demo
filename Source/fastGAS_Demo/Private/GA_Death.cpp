@@ -41,7 +41,8 @@ void UGA_Death::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const F
 	}
 	if (UCapsuleComponent* Capsule = Character->GetCapsuleComponent())
 	{
-		Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// Capsule->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 
 	// AI・コントローラの入力無効化
