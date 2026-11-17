@@ -72,6 +72,9 @@ void ASamuraiPlayerController::OnPossess(APawn* InPawn)
 	HandleForOnDodgeTagChanged = ASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge)
 		.AddUObject(this, &ASamuraiPlayerController::OnDodgeTagChanged);
 
+	HandleForOnDeadTagChanged = ASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Dead)
+		.AddUObject(this, &ASamuraiPlayerController::OnDeadTagChanged);
+
 	if (MainHUDClass)
 	{
 		MainHUD = CreateWidget<UUserWidget>(GetWorld(), MainHUDClass, TEXT("MainHUD"));
@@ -89,6 +92,8 @@ void ASamuraiPlayerController::OnUnPossess()
 	auto ASC = ControlledCharacter->GetAbilitySystemComponent();
 	ASC->UnregisterGameplayTagEvent(HandleForOnDodgeTagChanged, CombatGameplayTags::CGTAG_STATE_Action_Dodge);
 	HandleForOnDodgeTagChanged.Reset();
+	ASC->UnregisterGameplayTagEvent(HandleForOnDeadTagChanged, CombatGameplayTags::CGTAG_STATE_Dead);
+	HandleForOnDeadTagChanged.Reset();
 
 	ControlledCharacter = nullptr;
 }
@@ -219,6 +224,31 @@ void ASamuraiPlayerController::OnDodgeTagChanged(FGameplayTag Tag, int32 NewCoun
 	{
 		return;
 	}
+}
+
+void ASamuraiPlayerController::OnDeadTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	bool bIsAdded = (NewCount > 0);
+
+	if (bIsAdded)
+	{
+		FTimerHandle RespawnTimerHandle;
+		GetWorldTimerManager().SetTimer(
+			RespawnTimerHandle,
+			this,
+			&ASamuraiPlayerController::ExecutePlayerRespawn,
+			2.5f,
+			false
+		);
+	}
+}
+
+void ASamuraiPlayerController::ExecutePlayerRespawn()
+{
+	if (!ControlledCharacter)
+		return;
+
+	ControlledCharacter->RespawnAtCheckpoint();
 }
 
 void ASamuraiPlayerController::Input_Guard(const FInputActionValue& Value)

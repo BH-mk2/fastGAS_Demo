@@ -78,5 +78,10 @@ private:
 	void OnDodgeTagChanged(FGameplayTag Tag, int32 NewCount);
 	FDelegateHandle HandleForOnDodgeTagChanged;
 
+	UFUNCTION()
+	void OnDeadTagChanged(FGameplayTag Tag, int32 NewCount);
+	FDelegateHandle HandleForOnDeadTagChanged;
+	void ExecutePlayerRespawn();
+
 	UUserWidget* MainHUD;
 };
