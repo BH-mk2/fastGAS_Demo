@@ -7,6 +7,7 @@
 #include "GameFramework/Character.h"
 
 #include "EnemySpawner.h"
+#include "EncounterBarrierInterface.h"
 
 // Sets default values
 AEncounterZone::AEncounterZone()
@@ -27,12 +28,12 @@ void AEncounterZone::OnStageReset_Implementation()
 
 	if (bIsOneTimeOnly && bIsCleared)
 	{
-		SetBarriersActive(false);
+		SetBarriersActive(false, true);
 		return;
 	}
 
 	bIsCleared = false;
-	SetBarriersActive(false);
+	SetBarriersActive(false, true);
 }
 
 // Called when the game starts or when spawned
@@ -42,7 +43,7 @@ void AEncounterZone::BeginPlay()
 	
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &AEncounterZone::OnTriggerBeginOverlap);
 
-	SetBarriersActive(false);
+	SetBarriersActive(false, true);
 }
 
 void AEncounterZone::OnTriggerBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -72,7 +73,7 @@ void AEncounterZone::StartEncounter()
 {
 	bIsActive = true;
 
-	SetBarriersActive(true);
+	SetBarriersActive(true, false);
 
 	for (AEnemySpawner* Spawner : TargetSpawners)
 	{
@@ -99,7 +100,7 @@ void AEncounterZone::ClearEncounter()
 	bIsCleared = true;
 	GetWorldTimerManager().ClearTimer(CheckTimerHandle);
 
-	SetBarriersActive(false);
+	SetBarriersActive(false, false);
 
 	OnEncounterCleared.Broadcast();
 }
@@ -122,11 +123,20 @@ void AEncounterZone::CheckEncounterProgress()
 	ClearEncounter();
 }
 
-void AEncounterZone::SetBarriersActive(bool bActive)
+void AEncounterZone::SetBarriersActive(bool bActive, bool bImmediate)
 {
 	for (AActor* Barrier : BarrierActors)
 	{
-		if (IsValid(Barrier))
+		if (!IsValid(Barrier))
+		{
+			continue;
+		}
+
+		if (Barrier->GetClass()->ImplementsInterface(UEncounterBarrierInterface::StaticClass()))
+		{
+			IEncounterBarrierInterface::Execute_OnSetBarrierActive(Barrier, bActive, bImmediate);
+		}
+		else
 		{
 			Barrier->SetActorHiddenInGame(not bActive);
 			Barrier->SetActorEnableCollision(bActive);

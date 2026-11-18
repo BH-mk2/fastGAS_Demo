@@ -64,10 +64,12 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 private:
+	UFUNCTION(BlueprintCallable, Category = "Encounter")
 	void StartEncounter();
+
 	void ClearEncounter();
 	void CheckEncounterProgress();
-	void SetBarriersActive(bool bActive);
+	void SetBarriersActive(bool bActive, bool bImmediate);
 
 	bool bIsActive = false;
 	bool bIsCleared = false;
