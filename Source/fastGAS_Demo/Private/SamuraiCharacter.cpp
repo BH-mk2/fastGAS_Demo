@@ -173,16 +173,6 @@ void ASamuraiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	Super::EndPlay(EndPlayReason);
 }
 
-void ASamuraiCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void ASamuraiCharacter::Tick(float DeltaSeconds)
-{
-
-}
-
 bool ASamuraiCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
 {
 	if (!Weapon)
