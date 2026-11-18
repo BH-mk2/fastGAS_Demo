@@ -8,6 +8,7 @@
 
 #include "SamuraiCharacter.h"
 #include "CombatGameplayTags.h"
+#include "PlayerCombatComponent.h"
 
 void ASamuraiPlayerController::BeginPlay()
 {
@@ -68,6 +69,13 @@ void ASamuraiPlayerController::OnPossess(APawn* InPawn)
 
 	ControlledCharacter = Cast<ASamuraiCharacter>(InPawn);
 
+	if (!ControlledCharacter)
+	{
+		return;
+	}
+
+	PlayerCombatComp = ControlledCharacter->FindComponentByClass<UPlayerCombatComponent>();
+
 	auto ASC = ControlledCharacter->GetAbilitySystemComponent();
 	HandleForOnDodgeTagChanged = ASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Dodge)
 		.AddUObject(this, &ASamuraiPlayerController::OnDodgeTagChanged);
@@ -95,6 +103,7 @@ void ASamuraiPlayerController::OnUnPossess()
 	ASC->UnregisterGameplayTagEvent(HandleForOnDeadTagChanged, CombatGameplayTags::CGTAG_STATE_Dead);
 	HandleForOnDeadTagChanged.Reset();
 
+	PlayerCombatComp = nullptr;
 	ControlledCharacter = nullptr;
 }
 
@@ -188,7 +197,10 @@ void ASamuraiPlayerController::Input_Lock(const FInputActionValue& Value)
 	if (!ControlledCharacter)
 		return;
 
-	ControlledCharacter->ToggleLockOnTarget();
+	if (!PlayerCombatComp)
+		return;
+
+	PlayerCombatComp->ToggleLockOnTarget();
 }
 
 void ASamuraiPlayerController::Input_DodgeStarted(const FInputActionValue& Value)

@@ -12,6 +12,7 @@ class ASamuraiCharacter;
 class UInputMappingContext;
 class UInputAction;
 class UUserWidget;
+class UPlayerCombatComponent;
 
 /**
  * 
@@ -63,6 +64,8 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<ASamuraiCharacter> ControlledCharacter;
+
+	TObjectPtr<UPlayerCombatComponent> PlayerCombatComp;
 
 	void Input_Move(const FInputActionValue& Value);
 	void Input_MoveEnd(const FInputActionValue& Value);

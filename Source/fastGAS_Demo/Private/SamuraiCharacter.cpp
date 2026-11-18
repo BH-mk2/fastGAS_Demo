@@ -32,18 +32,6 @@ ASamuraiCharacter::ASamuraiCharacter()
 	// キャラクタを移動入力の方向へ滑らかに向かせる
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
-
-	// スプリングアームの生成と設定
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));
-	CameraBoom->TargetArmLength = 400.0f;
-	CameraBoom->bUsePawnControlRotation = true; // コントローラの回転に追従
-
-	// カメラの生成
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	FollowCamera->bUsePawnControlRotation = false; // アームに対して固定
 }
 
 FVector ASamuraiCharacter::GetDesiredMoveDirection() const
@@ -418,78 +406,35 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 	}
 }
 
-TWeakObjectPtr<AActor> ASamuraiCharacter::SearchTarget()
+void ASamuraiCharacter::SetLockOnTarget(TWeakObjectPtr<AActor> Target)
 {
-	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
-	constexpr bool bTraceComplex = false;
-	const TArray<AActor*> ActorsToIgnore = { this };
-	TArray<FHitResult> OutHits;
-
-	// Sweepをカメラの前方に飛ばして一番近いターゲットにロックオンする
-	// 1. 球を飛ばす
-	const FVector Start = GetActorLocation();
-	const FVector End = Start;
-	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(this, Start, End, LockOnRadius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::ForDuration, OutHits, true);
-
-	// 2. カメラ前方にいるものだけにフィルターする
-	const FVector ViewForward = GetViewRotation().Vector();
-
-	double BestLength = -1.0f;
-	AActor* BestTarget = nullptr;
-
-	for (FHitResult& Enemy : OutHits)
+	if (!Target.IsValid())
 	{
-		const auto TargetActor = Enemy.GetActor();
-		if (!TargetActor)continue;
-		const FVector ForwardVec = ViewForward;
-		const FVector ToTargetVec = TargetActor->GetActorLocation() - GetActorLocation();
-		const double ToTargetLength = ToTargetVec.Length();
-		const FVector ToTargetNormal = ToTargetVec.GetSafeNormal2D();
-		const float DotProduct = FVector::DotProduct(ForwardVec, ToTargetNormal);
-
-		// 正面ではないものは無視
-		if (DotProduct < 0.0f)
-			continue;
-
-		if (ToTargetLength > BestLength)
-		{
-			BestLength = ToTargetLength;
-			BestTarget = TargetActor;
-		}
-	}
-
-	return BestTarget;
-}
-
-void ASamuraiCharacter::ToggleLockOnTarget()
-{
-	// 既にロックオンしている場合、外して終了
-	if (LockedOnTarget.IsValid())
-	{
-		LockedOnTarget->OnDestroyed.RemoveDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
 		LockOff();
 		return;
 	}
 
-	// ターゲットを探索して、存在したらロックオンする
-	LockedOnTarget = SearchTarget();
-	if (!LockedOnTarget.IsValid())
-	{
-		// 存在しないので終了
-		LockedOnTarget = nullptr;
-		return;
-	}
+	LockedOnTarget = Target;
+
+	LockedOnTarget->OnDestroyed.AddDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	LockedOnTarget->OnDestroyed.AddDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
 
 	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockedOnTarget.Get()))
 	{
 		TargetASC->AddLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);
 	}
 }
+
 void ASamuraiCharacter::LockOff()
 {
+	if (!LockedOnTarget.IsValid())
+	{
+		return;
+	}
+
+	LockedOnTarget->OnDestroyed.RemoveDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
+
 	if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(LockedOnTarget.Get()))
 	{
 		TargetASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_LockedOn);

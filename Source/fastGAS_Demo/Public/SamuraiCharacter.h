@@ -50,8 +50,7 @@ public:
 	void ReleaseSprintInput();
 
 	void RequestMove(const FVector& WorldDirection, float Scale);
-	void ToggleLockOnTarget();
-	TWeakObjectPtr<AActor> SearchTarget();
+	void SetLockOnTarget(TWeakObjectPtr<AActor> Target);
 	void LockOff();
 	TWeakObjectPtr<AActor> GetLockedOnTarget();
 	UFUNCTION(BlueprintCallable, Category = "Combat")
@@ -73,14 +72,6 @@ protected:
 	void SetArmedState(bool bNewState);
 
 protected:
-	/* カメラブーム */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USpringArmComponent* CameraBoom;
-
-	/* フォローカメラ */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* FollowCamera;
-
 	/* 抜刀モーション */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Motion")
 	UAnimMontage* UnsheatheMotion;
@@ -97,9 +88,6 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsArmed = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
-	float LockOnRadius = 400.0f;
 
 	/* 攻撃系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
