@@ -45,6 +45,13 @@ protected:
 
 	UPROPERTY(Transient)
 	TWeakObjectPtr<ACharacter> CachedVictim;
+
+	// 忍殺ダメージ用 GameplayEffect（GE_DeathblowDamage）
+	UPROPERTY(EditDefaultsOnly, Category = "GAS")
+	TSubclassOf<UGameplayEffect> DeathblowDamageEffect;
+
+	void ApplyResultEffect();
+	bool bEffectApplied = false;
 };
 
 UCLASS()
@@ -65,10 +72,6 @@ protected:
 	// 被害者から見た攻撃者の相対位置オフセット（正面距離など）
 	UPROPERTY(EditDefaultsOnly, Category = "Positioning")
 	float FrontDistance = 120.0f;
-
-	// 忍殺ダメージ用 GameplayEffect（GE_DeathblowDamage）
-	UPROPERTY(EditDefaultsOnly, Category = "GAS")
-	TSubclassOf<UGameplayEffect> DeathblowDamageEffect;
 
 	// --- カメラ演出系 ---
 	UPROPERTY(EditDefaultsOnly, Category = "Camera")
@@ -110,7 +113,6 @@ private:
 	FVector OriginalSocketOffset = FVector::ZeroVector;
 	float OriginalFOV = 90.0f;
 	bool bIsZoomingIn = false;
-	bool bDamageApplied = false;
 };
 
 UCLASS()
@@ -127,10 +129,6 @@ protected:
 	// 再生するLevelSequenceアセット
 	UPROPERTY(EditAnywhere, Category = "Cinematic")
 	TObjectPtr<ULevelSequence> DeathblowSequence;
-
-	// 敵に適用するGameplayEffect
-	UPROPERTY(EditAnywhere, Category = "GAS")
-	TSubclassOf<UGameplayEffect> ResultGameplayEffect;
 
 	// シーケンス内のアクターバインディング用タグ
 	UPROPERTY(EditDefaultsOnly, Category = "Cinematic|Binding")
@@ -157,7 +155,6 @@ private:
 	UFUNCTION()
 	void OnSequenceFinished();
 
-	void ApplyResultEffect();
 	void CleanupSequenceActor();
 
 	UPROPERTY(Transient)
@@ -168,5 +165,4 @@ private:
 
 	FDelegateHandle ImpactEventHandle;
 	FTimerHandle CleanupTimerHandle;
-	bool bEffectApplied = false;
 };

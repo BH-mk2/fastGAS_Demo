@@ -43,6 +43,31 @@ void UDeathblowAction::FinishAction()
 	OnFinished.Broadcast();
 }
 
+void UDeathblowAction::ApplyResultEffect()
+{
+	if (bEffectApplied)
+		return;
+
+	if (!CachedAttacker.IsValid() || !CachedVictim.IsValid())
+		return;
+
+	if (DeathblowDamageEffect)
+	{
+		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedAttacker.Get());
+		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedVictim.Get());
+		if (SourceASC && TargetASC)
+		{
+			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
+			Context.AddSourceObject(this);
+			FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(DeathblowDamageEffect, 1.0f, Context);
+			if (Spec.IsValid())
+			{
+				SourceASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
+				bEffectApplied = true;
+			}
+		}
+	}
+}
 
 void UDeathblowAction_Standard::Execute_Implementation(ACharacter* Attacker, ACharacter* Victim)
 {
@@ -54,7 +79,7 @@ void UDeathblowAction_Standard::Execute_Implementation(ACharacter* Attacker, ACh
 		return;
 	}
 
-	bDamageApplied = false;
+	bEffectApplied = false;
 
 	// 1. 位置・向きの同期（現在 GA_Deathblow に書いている位置合わせ処理があればここへ移植）
 	const FVector TargetLocation = Victim->GetActorLocation() + Victim->GetActorForwardVector() * FrontDistance;
@@ -100,10 +125,10 @@ void UDeathblowAction_Standard::Execute_Implementation(ACharacter* Attacker, ACh
 
 void UDeathblowAction_Standard::FinishAction()
 {
-	if (!bDamageApplied)
+	if (!bEffectApplied)
 	{
 		OnImpactEventReceived(nullptr);
-		bDamageApplied = true;
+		bEffectApplied = true;
 	}
 
 	RestoreCamera();
@@ -140,22 +165,7 @@ void UDeathblowAction_Standard::OnImpactEventReceived(const FGameplayEventData* 
 	}
 
 	// ダメージGEの適用
-	if (DeathblowDamageEffect)
-	{
-		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedAttacker.Get());
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedVictim.Get());
-		if (SourceASC && TargetASC)
-		{
-			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
-			Context.AddSourceObject(this);
-			FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(DeathblowDamageEffect, 1.0f, Context);
-			if (Spec.IsValid())
-			{
-				SourceASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
-				bDamageApplied = true;
-			}
-		}
-	}
+	ApplyResultEffect();
 }
 
 void UDeathblowAction_Standard::StartCameraZoom(ACharacter* Attacker)
@@ -403,32 +413,6 @@ void UDeathblowAction_Cinematic::OnSequenceFinished()
 	}
 
 	FinishAction();
-}
-
-void UDeathblowAction_Cinematic::ApplyResultEffect()
-{
-	if (bEffectApplied)
-		return;
-
-	if (!CachedAttacker.IsValid() || !CachedVictim.IsValid())
-		return;
-
-	if (ResultGameplayEffect)
-	{
-		UAbilitySystemComponent* SourceASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedAttacker.Get());
-		UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(CachedVictim.Get());
-		if (SourceASC && TargetASC)
-		{
-			FGameplayEffectContextHandle Context = SourceASC->MakeEffectContext();
-			Context.AddSourceObject(this);
-			FGameplayEffectSpecHandle Spec = SourceASC->MakeOutgoingSpec(ResultGameplayEffect, 1.0f, Context);
-			if (Spec.IsValid())
-			{
-				SourceASC->ApplyGameplayEffectSpecToTarget(*Spec.Data.Get(), TargetASC);
-				bEffectApplied = true;
-			}
-		}
-	}
 }
 
 void UDeathblowAction_Cinematic::CleanupSequenceActor()
