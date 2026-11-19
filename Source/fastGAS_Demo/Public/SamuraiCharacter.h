@@ -90,14 +90,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat")
 	bool bIsArmed = false;
 
-	/* 攻撃系 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> AttackAbilityClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> DeathblowAbilityClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float DeathblowSearchRadius = 100.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Deathblow")
@@ -105,34 +98,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
 	TEnumAsByte<ECollisionChannel> WeaponTraceChannel;
-
-	/* 回避系 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> DodgeAbilityClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS|Tags")
-	FGameplayTag DodgeAbilityTag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> SprintAbilityClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "GAS|Tags")
-	FGameplayTag SprintAbilityTag;
-
-	/* ガード系 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> GuardAbilityClass;
-
-	/* 体幹崩れ系 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> StaggerAbilityClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> DirectHitReactAbilityClass;
-
-	/* 死亡系 */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")
-	TSubclassOf<class UCombatGameplayAbility> DeathAbilityClass;
 
 private:
 	void AttachWeaponToHand();

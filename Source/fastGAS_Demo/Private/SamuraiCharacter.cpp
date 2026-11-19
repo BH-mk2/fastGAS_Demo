@@ -13,7 +13,6 @@
 
 #include "CombatGameplayAbility.h"
 #include "WeaponBase.h"
-#include "CombatAbilityInputID.h"
 #include "CombatGameplayTags.h"
 #include "StageManagementSubsystem.h"
 #include "CombatAttributeSet.h"
@@ -78,14 +77,11 @@ void ASamuraiCharacter::RespawnAtCheckpoint()
 	if (UCapsuleComponent* Capsule = GetCapsuleComponent())
 	{
 		Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		Capsule->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
 
-	if (DefaultAttributesEffect)
-	{
-		UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-		FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
-		ASC->ApplyGameplayEffectToSelf(DefaultAttributesEffect.GetDefaultObject(), 1.0f, Context);
-	}
+	ResetAttributes();
+
 	if (UCharacterMovementComponent* CMC = GetCharacterMovement())
 	{
 		CMC->SetMovementMode(MOVE_Walking);
@@ -108,48 +104,8 @@ void ASamuraiCharacter::BeginPlay()
 		Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketForSheathe);
 	}
 
-	if (!AttackAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(AttackAbilityClass, 1));
-
-	if (!DeathblowAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathblowAbilityClass, 1));
-
-	if (!DodgeAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DodgeAbilityClass, 1));
-
-	if (!SprintAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(SprintAbilityClass, 1));
-
-	if (!GuardAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(GuardAbilityClass, 1, static_cast<int32>(ECombatAbilityInputID::Guard)));
-
 	AbilitySystemComponent->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Guard)
 		.AddUObject(this, &ASamuraiCharacter::OnGuardTagChanged);
-
-	if (!StaggerAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StaggerAbilityClass, 1));
-
-	if (!DirectHitReactAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DirectHitReactAbilityClass, 1));
-
-	if (!DeathAbilityClass)
-		return;
-
-	AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(DeathAbilityClass, 1));
 }
 void ASamuraiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
@@ -283,53 +239,37 @@ void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
 
 void ASamuraiCharacter::ExecAttack()
 {
-	const bool bIsAttacking = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Attack);
+	const bool bIsAttacking = IsAbilityActiveByTag(CombatGameplayTags::CGTAG_ABILITY_Action_Attack);
 	const bool bCancellableAttack = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Combat_Cancellable_Attack);
 
 	TObjectPtr<AActor> DeathblowTarget = FindDeathblowTarget();
 
-	if (bIsAttacking)
+	// 忍殺にキャンセルさせる
+	if (DeathblowTarget && (!bIsAttacking || bCancellableAttack))
 	{
-		// 忍殺にキャンセルさせる
-		if (bCancellableAttack && DeathblowTarget)
-		{
-			ExecDeathblow(DeathblowTarget);
-			return;
-		}
-		// コンボ入力
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Attack, FGameplayEventData{});
+		ExecDeathblow(DeathblowTarget);
 		return;
 	}
-	else
-	{
-		if (DeathblowTarget)
-		{
-			ExecDeathblow(DeathblowTarget);
-			return;
-		}
-
-		// 攻撃(ひと振り目)
-		AbilitySystemComponent->TryActivateAbilityByClass(AttackAbilityClass);
-
-		return;
-	}
+	TriggerAction(
+		CombatGameplayTags::CGTAG_ABILITY_Action_Attack,
+		CombatGameplayTags::CGTAG_EVENT_Command_Continue
+	);
+	return;
 }
 
 void ASamuraiCharacter::ExecDodge()
 {
-	// AbilitySystemComponent->TryActivateAbilityByClass(DodgeAbilityClass);
-	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(DodgeAbilityTag));
+	TriggerAction(CombatGameplayTags::CGTAG_ABILITY_Action_Dodge);
 }
 
 void ASamuraiCharacter::HoldSprintInput()
 {
-  	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(SprintAbilityTag));
+	TriggerAction(CombatGameplayTags::CGTAG_ABILITY_Action_Sprint);
 }
 
 void ASamuraiCharacter::ReleaseSprintInput()
 {
-	FGameplayTagContainer SprintTags(SprintAbilityTag);
-	AbilitySystemComponent->CancelAbilities(&SprintTags);
+	ReleaseAction(CombatGameplayTags::CGTAG_ABILITY_Action_Sprint, CombatGameplayTags::CGTAG_EVENT_Command_Release);
 }
 
 void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
@@ -524,10 +464,13 @@ TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()
 
 void ASamuraiCharacter::StartGuard()
 {
-	AbilitySystemComponent->AbilityLocalInputPressed(static_cast<int32>(ECombatAbilityInputID::Guard));
+	TriggerAction(CombatGameplayTags::CGTAG_ABILITY_Action_Guard);
 }
 
 void ASamuraiCharacter::StopGuard()
 {
-	AbilitySystemComponent->AbilityLocalInputReleased(static_cast<int32>(ECombatAbilityInputID::Guard));
+	ReleaseAction(
+		CombatGameplayTags::CGTAG_ABILITY_Action_Guard,
+		CombatGameplayTags::CGTAG_EVENT_Command_Release
+	);
 }
