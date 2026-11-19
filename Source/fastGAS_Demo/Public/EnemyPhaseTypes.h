@@ -4,6 +4,8 @@
 #include "GameplayTagContainer.h"
 #include "EnemyPhaseTypes.generated.h"
 
+class UCombatAbilitySet;
+
 UENUM(BlueprintType)
 enum class EZeroHealthBehavior : uint8
 {
@@ -45,9 +47,9 @@ struct FEnemyPhaseConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase")
 	FGameplayTag PhaseTag;
 
-	// このフェーズに移行した直後に１回だけ実行する演出用アビリティタグ
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Phase")
-	FGameplayTag TransitionAbilityTag;
+	// このフェーズ固有の行動をまとめたアビリティ&GameplayEffectセット
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase|Combat")
+	TObjectPtr<UCombatAbilitySet> PhaseAbilitySet;
 
 	// このフェーズでAIが抽選・使用できる攻撃アビリティのタグ一覧
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase|Combat")

@@ -109,13 +109,14 @@ void UCombatPhaseComponent::ApplyPhaseConfig(int32 NewPhaseIndex, bool bIsInitia
 	if (!OwnerASC || !PhaseConfigs.IsValidIndex(NewPhaseIndex))
 		return;
 
-	if (!bIsInitialSetup && PhaseConfigs.IsValidIndex(CurrentPhaseIndex))
+	if (PhaseConfigs.IsValidIndex(CurrentPhaseIndex))
 	{
 		const FGameplayTag OldTag = PhaseConfigs[CurrentPhaseIndex].PhaseTag;
 		if (OldTag.IsValid())
 		{
 			OwnerASC->RemoveLooseGameplayTag(OldTag);
 		}
+		CurrentGrantedHandles.TakeFromAbilitySystem(OwnerASC);
 	}
 
 	CurrentPhaseIndex = NewPhaseIndex;
@@ -126,14 +127,15 @@ void UCombatPhaseComponent::ApplyPhaseConfig(int32 NewPhaseIndex, bool bIsInitia
 		OwnerASC->AddLooseGameplayTag(NewConfig.PhaseTag);
 	}
 
+	if (NewConfig.PhaseAbilitySet)
+	{
+		NewConfig.PhaseAbilitySet->GiveToAbilitySystem(OwnerASC, &CurrentGrantedHandles, GetOwner());
+	}
+
 	if (!bIsInitialSetup)
 	{
 		OnPhaseChanged.Broadcast(CurrentPhaseIndex);
-
-		if (NewConfig.TransitionAbilityTag.IsValid())
-		{
-			OwnerASC->TryActivateAbilitiesByTag(FGameplayTagContainer(NewConfig.TransitionAbilityTag));
-		}
+		OwnerASC->TryActivateAbilitiesByTag(FGameplayTagContainer(CombatGameplayTags::CGTAG_ABILITY_PhaseTransition));
 	}
 }
 

@@ -7,6 +7,7 @@
 #include "Abilities/GameplayAbilityTypes.h"
 
 #include "EnemyPhaseTypes.h"
+#include "CombatAbilitySet.h"
 #include "CombatPhaseComponent.generated.h"
 
 class UAbilitySystemComponent;
@@ -51,6 +52,9 @@ public:
 protected:	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat|Phase")
 	TArray<FEnemyPhaseConfig> PhaseConfigs;
+
+	UPROPERTY(Transient)
+	FCombatAbilitySet_GrantedHandles CurrentGrantedHandles;
 
 private:
 	void InitializePhaseSystem();
