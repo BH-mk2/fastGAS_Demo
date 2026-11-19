@@ -67,5 +67,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Death, "Ability.Death");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Stagger, "Ability.Stagger");
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_PhaseTransition, "Ability.PhaseTransition");
+
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_DirectHitReact, "Ability.DirectHitReact");
 }
