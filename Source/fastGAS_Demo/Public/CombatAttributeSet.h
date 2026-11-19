@@ -51,4 +51,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Movement")
 	FGameplayAttributeData MoveSpeed;
 	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, MoveSpeed);
+
+	// 6. ゲージ本数
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Stock")
+	FGameplayAttributeData RemainingStocks;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, RemainingStocks);
+
+	// 7. 最大ゲージ本数
+	UPROPERTY(BlueprintReadOnly, Category = "Attributes|Stock")
+	FGameplayAttributeData MaxStocks;
+	ATTRIBUTE_ACCESSORS(UCombatAttributeSet, MaxStocks);
 };

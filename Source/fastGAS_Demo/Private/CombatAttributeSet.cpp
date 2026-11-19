@@ -79,4 +79,8 @@ void UCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCall
             }
         }
     }
+    else if (Data.EvaluatedData.Attribute == GetRemainingStocksAttribute())
+    {
+        SetRemainingStocks(FMath::Clamp(GetRemainingStocks(), 0.0f, GetMaxStocks()));
+    }
 }
