@@ -7,10 +7,12 @@
 #include "GameplayEffectTypes.h"
 #include "CombatInterface.h"
 #include "AbilitySystemComponent.h"
+#include "CombatAbilitySet.h"
 #include "CombatCharacterBase.generated.h"
 
 class UCombatAttributeSet;
 class AWeaponBase;
+class UCombatAbilitySet;
 
 UCLASS()
 class FASTGAS_DEMO_API ACombatCharacterBase : public ACharacter, public ICombatInterface
@@ -24,6 +26,18 @@ public:
 	virtual FVector GetDesiredMoveDirection() const { ensureAlwaysMsgf(false, TEXT("Class %s is Unimplemented: GetDesiredMoveDirection()"), *GetName()); return FVector::ZeroVector; }
 
 	TObjectPtr<UAbilitySystemComponent> GetAbilitySystemComponent() { return AbilitySystemComponent; }
+
+	UFUNCTION(BlueprintPure, Category = "Combat|Ability")
+	bool IsAbilityActiveByTag(FGameplayTag AbilityTag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Combat|Ability")
+	void TriggerAction(FGameplayTag AbilityTag, FGameplayTag FollowUpEventTag = FGameplayTag());
+
+	UFUNCTION(BlueprintCallable, Category = "Combat|Ability")
+	void ReleaseAction(FGameplayTag AbilityTag, FGameplayTag ReleaseEventTag);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat|Attributes")
+	virtual void ResetAttributes();
 
 protected:
 	// Called when the game starts or when spawned
@@ -50,10 +64,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="GAS")
 	TObjectPtr<UCombatAttributeSet> AttributeSet;
 
-	// 初期ステータスを設定するGEのクラス
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="GAS")
-	TSubclassOf<class UGameplayEffect> DefaultAttributesEffect;
-
 	// 武器クラス
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
 	TSubclassOf<class AWeaponBase> WeaponClass;
@@ -65,8 +75,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Weapon")
 	FName WeaponAttachToSocketName;
 
-	// 初期ステータスを設定する関数
-	virtual void InitializeDefaultAttributes();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat|Ability")
+	TObjectPtr<UCombatAbilitySet> DefaultAbilitySet;
+
+	UPROPERTY(Transient)
+	FCombatAbilitySet_GrantedHandles DefaultGrantedHandles;
 
 private:
 	// 衝突判定用のヒット済みActorリスト

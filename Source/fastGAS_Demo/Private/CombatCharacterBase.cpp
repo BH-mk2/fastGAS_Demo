@@ -19,6 +19,65 @@ ACombatCharacterBase::ACombatCharacterBase()
 	AttributeSet = CreateDefaultSubobject<UCombatAttributeSet>(TEXT("AttributeSet"));
 }
 
+bool ACombatCharacterBase::IsAbilityActiveByTag(FGameplayTag AbilityTag) const
+{
+	if (!AbilitySystemComponent || !AbilityTag.IsValid())
+		return false;
+
+	for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
+	{
+		if (Spec.IsActive() && Spec.Ability && Spec.Ability->GetAssetTags().HasTag(AbilityTag))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void ACombatCharacterBase::TriggerAction(FGameplayTag AbilityTag, FGameplayTag FollowUpEventTag)
+{
+	if (!AbilitySystemComponent || !AbilityTag.IsValid())
+		return;
+
+	// 起動中であれば、追加入力を送る
+	if (IsAbilityActiveByTag(AbilityTag))
+	{
+		if (FollowUpEventTag.IsValid())
+		{
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+				this,
+				FollowUpEventTag,
+				FGameplayEventData()
+			);
+		}
+		return;
+	}
+
+	// 未起動なら新規起動する
+	AbilitySystemComponent->TryActivateAbilitiesByTag(FGameplayTagContainer(AbilityTag));
+}
+
+void ACombatCharacterBase::ReleaseAction(FGameplayTag AbilityTag, FGameplayTag ReleaseEventTag)
+{
+	if (!AbilitySystemComponent || !AbilityTag.IsValid() || !ReleaseEventTag.IsValid())
+	{
+		return;
+	}
+
+	if (IsAbilityActiveByTag(AbilityTag))
+	{
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, ReleaseEventTag, FGameplayEventData());
+	}
+}
+
+void ACombatCharacterBase::ResetAttributes()
+{
+	if (AbilitySystemComponent && DefaultAbilitySet)
+	{
+		DefaultAbilitySet->ApplyGameplayEffectsToAbilitySystem(AbilitySystemComponent, &DefaultGrantedHandles, this);
+	}
+}
+
 // Called when the game starts or when spawned
 void ACombatCharacterBase::BeginPlay()
 {
@@ -33,7 +92,7 @@ void ACombatCharacterBase::BeginPlay()
 	Weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, WeaponAttachToSocketName);
 
-	if (AbilitySystemComponent && AttributeSet)
+	if (AbilitySystemComponent && AttributeSet && DefaultAbilitySet)
 	{
 		AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 			UCombatAttributeSet::GetMoveSpeedAttribute()
@@ -43,6 +102,8 @@ void ACombatCharacterBase::BeginPlay()
 		{
 			CMC->MaxWalkSpeed = AttributeSet->GetMoveSpeed();
 		}
+
+		DefaultAbilitySet->GiveToAbilitySystem(AbilitySystemComponent, &DefaultGrantedHandles, this);
 	}
 }
 
@@ -54,7 +115,6 @@ void ACombatCharacterBase::PossessedBy(AController* NewController)
 		return;
 
 	AbilitySystemComponent->InitAbilityActorInfo(this, this);
-	InitializeDefaultAttributes();
 }
 
 void ACombatCharacterBase::ResetHitActors()
@@ -90,25 +150,6 @@ void ACombatCharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-}
-
-void ACombatCharacterBase::InitializeDefaultAttributes()
-{
-	if (!AbilitySystemComponent)
-		return;
-
-	if (!DefaultAttributesEffect)
-		return;
-
-	FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
-	EffectContext.AddSourceObject(this);
-
-	FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributesEffect, 1.0f, EffectContext);
-
-	if (SpecHandle.IsValid())
-	{
-		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data);
-	}
 }
 
 void ACombatCharacterBase::OnMoveSpeedChanged(const FOnAttributeChangeData& Data)
