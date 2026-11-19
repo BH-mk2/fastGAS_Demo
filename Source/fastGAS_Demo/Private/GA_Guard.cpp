@@ -58,7 +58,7 @@ void UGA_Guard::ActivateAbility(
 	// ガード終了を待つ
 	auto WaitInputTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this,
-		CombatGameplayTags::CGTAG_EVENT_Input_GuardEnd,
+		CombatGameplayTags::CGTAG_EVENT_Command_Release,
 		nullptr,
 		false,
 		true

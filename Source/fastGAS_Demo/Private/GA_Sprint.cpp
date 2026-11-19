@@ -2,6 +2,9 @@
 
 
 #include "GA_Sprint.h"
+#include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
+
+#include "CombatGameplayTags.h"
 
 void UGA_Sprint::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
@@ -12,6 +15,18 @@ void UGA_Sprint::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const 
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
 	}
+
+	// 終了を待つ
+	auto WaitInputTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
+		this,
+		CombatGameplayTags::CGTAG_EVENT_Command_Release,
+		nullptr,
+		false,
+		true
+	);
+	WaitInputTask->EventReceived.AddDynamic(this, &UGA_Sprint::OnReleaseEventReceived);
+	WaitInputTask->ReadyForActivation();
+
 
 	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponentFromActorInfo())
 	{
@@ -59,4 +74,9 @@ bool UGA_Sprint::CanActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 		}
 	}
 	return true;
+}
+
+void UGA_Sprint::OnReleaseEventReceived(FGameplayEventData payload)
+{
+	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
 }

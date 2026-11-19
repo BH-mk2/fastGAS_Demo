@@ -31,4 +31,7 @@ protected:
 
 private:
 	FActiveGameplayEffectHandle ActiveSprintEffectHandle;
+
+	UFUNCTION()
+	void OnReleaseEventReceived(FGameplayEventData payload);
 };

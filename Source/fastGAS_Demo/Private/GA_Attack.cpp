@@ -50,7 +50,7 @@ void UGA_Attack::ActivateAbility(
 	// コンボ入力を待つ
 	auto WaitInputTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(
 		this,
-		CombatGameplayTags::CGTAG_EVENT_Input_Attack,
+		CombatGameplayTags::CGTAG_EVENT_Command_Continue,
 		nullptr,
 		false,
 		true
