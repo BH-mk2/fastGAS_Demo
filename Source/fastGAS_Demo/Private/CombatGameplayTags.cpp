@@ -2,8 +2,8 @@
 
 namespace CombatGameplayTags
 {
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Attack, "Event.Input.Attack");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_GuardEnd, "Event.Input.GuardEnd");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Command_Continue, "Event.Command.Continue");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Command_Release, "Event.Command.Release");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Deathblow, "Event.Input.Deathblow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Input_Evaluate, "Event.Input.Evaluate");
 
@@ -59,11 +59,11 @@ namespace CombatGameplayTags
 
 	/* Gameplay Abilities用 */
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY, "Ability");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Attack, "Ability.Attack");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Deathblow, "Ability.Deathblow");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Guard, "Ability.Guard");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Dodge, "Ability.Dodge");
-	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Sprint, "Ability.Sprint");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Attack, "Ability.Action.Attack");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Deathblow, "Ability.Action.Deathblow");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Guard, "Ability.Action.Guard");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Dodge, "Ability.Action.Dodge");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Sprint, "Ability.Action.Sprint");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Death, "Ability.Death");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Stagger, "Ability.Stagger");
 
