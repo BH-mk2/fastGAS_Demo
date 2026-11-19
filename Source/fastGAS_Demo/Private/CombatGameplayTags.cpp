@@ -12,6 +12,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_PostureBroken, "Event.Combat.PostureBroken");		  // 体幹が崩れたときのイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_DirectHitReact, "Event.Combat.DirectHitReact");	  // 攻撃が直撃したときのイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_HealthBroken, "Event.Combat.HealthBroken");		  // 体力が無くなったときのイベント
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_ExecuteDeath, "Event.Combat.ExecuteDeath");     // 体力が無くなって死亡を確定させるときのイベント
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_EVENT_Combat_Deathblow_Impact, "Event.Combat.Deathblow.Impact"); // 忍殺で攻撃を当てたタイミングのイベント
 
 	// StateTreeイベント用
