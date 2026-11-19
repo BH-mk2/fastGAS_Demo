@@ -32,6 +32,7 @@ ASamuraiCharacter::ASamuraiCharacter()
 	// キャラクタを移動入力の方向へ滑らかに向かせる
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	GetCharacterMovement()->bEnablePhysicsInteraction = false;
 }
 
 FVector ASamuraiCharacter::GetDesiredMoveDirection() const
@@ -267,6 +268,9 @@ void ASamuraiCharacter::PlayWeaponMontage(UAnimMontage* MontageToPlay, bool bIsN
 
 void ASamuraiCharacter::OnWeaponMontageEnded(FName NotifyName)
 {
+	if (!IsValid(this) || IsActorBeingDestroyed() || !GetCapsuleComponent()->IsRegistered())
+		return;
+
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);

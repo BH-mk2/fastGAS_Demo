@@ -60,8 +60,9 @@ public:
 
 	UDeathblowAction* GetDeathblowAction() { return DeathblowAction; }
 
-
 	void RespawnAtCheckpoint();
+
+	TEnumAsByte<ECollisionChannel> GetWeaponTraceChannel()const { return WeaponTraceChannel; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -101,6 +102,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Deathblow")
 	TObjectPtr<class UDeathblowAction> DeathblowAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")
+	TEnumAsByte<ECollisionChannel> WeaponTraceChannel;
 
 	/* 回避系 */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GAS")

@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "CombatGameplayTags.h"
+#include "SamuraiCharacter.h"
 
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -36,7 +37,13 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 		return;
 	}
 
-	const TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECC_Pawn) };
+	ECollisionChannel TraceChannel = ECC_Visibility;
+	if (const ASamuraiCharacter* Samurai = Cast<ASamuraiCharacter>(Owner))
+	{
+		TraceChannel = Samurai->GetWeaponTraceChannel();
+	}
+
+	const ETraceTypeQuery TraceType = UEngineTypes::ConvertToTraceType(TraceChannel);
 	constexpr bool bTraceComplex = false;
 	const TArray<AActor*> ActorsToIgnore = {Owner};
 	TArray<FHitResult> OutHits;
@@ -44,8 +51,18 @@ void UANS_MeleeTraceC::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenc
 	// 武器のソケットを元にしたSweepで衝突判定をする
 	// Memo: WorldContextObjectにthis(UAnimNotifyState)を指定すると衝突判定が行われない(ように見える)
 	//       存在しているWorldが確実なMeshCompを指定することで解消
-	bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(MeshComp, Start, End, Radius, ObjectTypes, bTraceComplex, ActorsToIgnore, EDrawDebugTrace::None, OutHits, true);
-	if (bHit)
+	bool bHit = UKismetSystemLibrary::SphereTraceMulti(
+		MeshComp,
+		Start,
+		End,
+		Radius,
+		TraceType,
+		bTraceComplex,
+		ActorsToIgnore,
+		EDrawDebugTrace::None,
+		OutHits,
+		true);
+	if (not OutHits.IsEmpty())
 	{
 		HitProcess(Owner, CombatInterface, OutHits);
 	}
