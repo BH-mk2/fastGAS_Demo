@@ -49,7 +49,8 @@ public:
 	void HoldSprintInput();
 	void ReleaseSprintInput();
 
-	void RequestMove(const FVector& WorldDirection, float Scale);
+	// void RequestMove(const FVector& WorldDirection, float Scale);
+	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
 	void SetLockOnTarget(TWeakObjectPtr<AActor> Target);
 	void LockOff();
 	TWeakObjectPtr<AActor> GetLockedOnTarget();

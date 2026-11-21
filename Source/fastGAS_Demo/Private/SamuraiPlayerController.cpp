@@ -161,14 +161,14 @@ void ASamuraiPlayerController::Input_Move(const FInputActionValue& Value)
 	const FVector RightVec = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 	const FVector DesiredDirection = (ForwardVec * MovementVector.Y + RightVec * MovementVector.X).GetSafeNormal();
-	ControlledCharacter->RequestMove(DesiredDirection, 1.0f);
+	ControlledCharacter->AddMovementInput(DesiredDirection, 1.0f);
 }
 
 void ASamuraiPlayerController::Input_MoveEnd(const FInputActionValue& Value)
 {
 	if (!ControlledCharacter)return;
 
-	ControlledCharacter->RequestMove(FVector::ZeroVector, 0.0f);
+	ControlledCharacter->AddMovementInput(FVector::ZeroVector, 0.0f);
 }
 
 void ASamuraiPlayerController::Input_Look(const FInputActionValue& Value)
