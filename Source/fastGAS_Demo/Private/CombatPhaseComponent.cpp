@@ -135,7 +135,6 @@ void UCombatPhaseComponent::ApplyPhaseConfig(int32 NewPhaseIndex, bool bIsInitia
 	if (!bIsInitialSetup)
 	{
 		OnPhaseChanged.Broadcast(CurrentPhaseIndex);
-		OwnerASC->TryActivateAbilitiesByTag(FGameplayTagContainer(CombatGameplayTags::CGTAG_ABILITY_PhaseTransition));
 	}
 }
 
