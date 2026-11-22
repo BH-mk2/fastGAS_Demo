@@ -7,6 +7,8 @@
 #include "CombatCharacterBase.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 
+#include "SamuraiCharacter.h"
+
 #include "Kismet/KismetSystemLibrary.h"
 
 void UGA_Dodge::ActivateAbility(
@@ -19,6 +21,13 @@ void UGA_Dodge::ActivateAbility(
 
 	ACombatCharacterBase* Character = GetCombatCharacter();
 	if (!Character)
+	{
+		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
+		return;
+	}
+
+	ASamuraiCharacter* Samurai = Cast<ASamuraiCharacter>(Character);
+	if (!Samurai)
 	{
 		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
 		return;
@@ -42,17 +51,24 @@ void UGA_Dodge::ActivateAbility(
 	UE_LOG(LogTemp, Warning, TEXT("UGA_Dodge: DesiredDir: %s"), *DesiredDir.ToCompactString());
 
 	// 向きによって再生するモンタージュを変える
+	// 非ロックオン時は指定した方向に前ステップ
+	// ロックオン時は以下
 	// 1. 入力がない場合、後ろステップ
 	// 2. 真横の場合、左右ステップ
 	// 3. 前方±45度の場合、アクタの向きを入力方向に変えてその方向に向かって前ステップ
 	UAnimMontage* const SelectedMontage = [&]() {
+		const bool bIsLockedOn = Samurai->GetLockedOnTarget() != nullptr;
+
+		if (not bIsLockedOn)
+			return ForwardDodgeMontage;
+
 		if (DesiredDir.IsNearlyZero())
 		{
 			return BackwardDodgeMontage;
 		}
 
 		const FRotator DesiredRot = DesiredDir.Rotation();
-		const float AngleDiff = (DesiredRot - Character->GetViewRotation()).GetNormalized().Yaw;
+		const float AngleDiff = (DesiredRot - Character->GetActorRotation()).GetNormalized().Yaw;
 
 		// 前
 		if (-45.0f <= AngleDiff && AngleDiff <= 45.0f)
