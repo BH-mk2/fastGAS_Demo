@@ -505,6 +505,14 @@ void ASamuraiCharacter::UpdateRotate(float DeltaTime)
 	if (!AbilitySystemComponent)
 		return;
 
+	const TArray<FGameplayTag> UnmovableTags{ 
+		CombatGameplayTags::CGTAG_STATE_Action_Staggered,
+		CombatGameplayTags::CGTAG_STATE_Dead };
+	if (AbilitySystemComponent->HasAnyMatchingGameplayTags(FGameplayTagContainer::CreateFromArray(UnmovableTags)))
+	{
+		return;
+	}
+
 	FVector MoveInput = GetLastMovementInputVector();
 
 	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
