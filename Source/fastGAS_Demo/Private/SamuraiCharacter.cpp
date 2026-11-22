@@ -38,6 +38,18 @@ ASamuraiCharacter::ASamuraiCharacter()
 	}
 }
 
+void ASamuraiCharacter::SetDesiredMoveDirection(const FVector& Direction)
+{
+	if (Direction.IsNearlyZero())
+	{
+		DesiredMoveDirection = FVector::ZeroVector;
+	}
+	else
+	{
+		DesiredMoveDirection = Direction;
+	}
+}
+
 FVector ASamuraiCharacter::GetDesiredMoveDirection() const
 {
 	return DesiredMoveDirection;
@@ -120,6 +132,13 @@ void ASamuraiCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 
 	Super::EndPlay(EndPlayReason);
+}
+
+void ASamuraiCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	UpdateRotate(DeltaTime);
 }
 
 bool ASamuraiCharacter::GetAttackPoints(FVector& OutStart, FVector& OutEnd)const
@@ -358,90 +377,20 @@ void ASamuraiCharacter::RequestMove(const FVector& WorldDirection, float Scale)
 
 void ASamuraiCharacter::AddMovementInput(FVector WorldDirection, float ScaleValue, bool bForce)
 {
-	if (!bForce)
+	SetDesiredMoveDirection(WorldDirection * ScaleValue);
+	Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
+}
+
+bool ASamuraiCharacter::IsMoveInputIgnored() const
+{
+	if (AbilitySystemComponent)
 	{
-		if (IsMoveInputIgnored())
-			return;
-	}
-	else
-	{
-		// 強制的な移動であれば通す
-	}
-
-	if (WorldDirection.IsNearlyZero())
-	{
-		DesiredMoveDirection = FVector::ZeroVector;
-		return;
-	}
-
-	DesiredMoveDirection = WorldDirection;
-
-	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
-	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);
-	const bool bCanInstantRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_InstantWindow);
-	const bool bIsSprinting = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Sprint);
-
-	const float TurnAroundSpeed = 10.0f;
-
-	// ① 通常時：足が動かせる状態
-	if (!bIsMovementDisabled)
-	{
-		// 移動入力を流す
-		if (auto Target = LockedOnTarget.Get())
+		if (AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable))
 		{
-			// ロックオン中は方向入力があった場合、ターゲットの方向に回転する
-			if (!WorldDirection.IsNearlyZero())
-			{
-				// ただし、走り中は入力した方向を向く
-				if (bIsSprinting)
-				{
-					const FRotator CurrentRot = GetActorRotation();
-					const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
-					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
-					SetActorRotation(NewRot);
-				}
-				else
-				{
-					const FRotator CurrentRot = GetActorRotation();
-					const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-					const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
-					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
-					SetActorRotation(NewRot);
-				}
-			}
-		}
-		Super::AddMovementInput(WorldDirection, ScaleValue, bForce);
-	}
-	// ② 攻撃中など：足が止まっている状態
-	else
-	{
-		// ロックオンしている場合は優先してターゲット先に向きを変える
-		if (auto Target = LockedOnTarget.Get())
-		{
-			const FRotator CurrentRot = GetActorRotation();
-			const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-			const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
-			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
-			SetActorRotation(NewRot);
-		}
-		else
-		{
-			// 足は止まっているが、初動の向き調整ウィンドウが開いている時だけ手動で回す
-			// 即座に回転して良い場合
-			if (bCanInstantRotate)
-			{
-				SetActorRotation(FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f));
-			}
-			else if (bCanSmoothRotate)
-			{
-				// 滑らかに向きを変える
-				const FRotator CurrentRot = GetActorRotation();
-				const FRotator TargetRot = FRotator(0.0f, WorldDirection.Rotation().Yaw, 0.0f);
-				const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
-				SetActorRotation(NewRot);
-			}
+			return true;
 		}
 	}
+	return Super::IsMoveInputIgnored();
 }
 
 void ASamuraiCharacter::SetLockOnTarget(TWeakObjectPtr<AActor> Target)
@@ -454,7 +403,7 @@ void ASamuraiCharacter::SetLockOnTarget(TWeakObjectPtr<AActor> Target)
 
 	LockedOnTarget = Target;
 
-	LockedOnTarget->OnDestroyed.AddDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
+	LockedOnTarget->OnDestroyed.AddUniqueDynamic(this, &ASamuraiCharacter::OnTargetDestroyed);
 
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 
@@ -549,6 +498,82 @@ void ASamuraiCharacter::ExecDeathblow(TObjectPtr<AActor> Target)
 	Payload.TargetData = TargetDataHandle;
 
 	UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(this, CombatGameplayTags::CGTAG_EVENT_Input_Deathblow, Payload);
+}
+
+void ASamuraiCharacter::UpdateRotate(float DeltaTime)
+{
+	if (!AbilitySystemComponent)
+		return;
+
+	FVector MoveInput = GetLastMovementInputVector();
+
+	const bool bIsMovementDisabled = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Movement_Disable);
+	const bool bCanSmoothRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_SmoothWindow);
+	const bool bCanInstantRotate = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Rotation_InstantWindow);
+	const bool bIsSprinting = AbilitySystemComponent->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Sprint);
+
+	const float TurnAroundSpeed = 10.0f;
+
+	// ① 通常時：足が動かせる状態
+	if (!bIsMovementDisabled)
+	{
+		// 移動入力を流す
+		if (auto Target = LockedOnTarget.Get())
+		{
+			// ロックオン中は方向入力があった場合、ターゲットの方向に回転する
+			if (!MoveInput.IsNearlyZero())
+			{
+				// ただし、走り中は入力した方向を向く
+				if (bIsSprinting)
+				{
+					const FRotator CurrentRot = GetActorRotation();
+					const FRotator TargetRot = FRotator(0.0f, MoveInput.Rotation().Yaw, 0.0f);
+					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+					SetActorRotation(NewRot);
+				}
+				else
+				{
+					const FRotator CurrentRot = GetActorRotation();
+					const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+					const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
+					const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+					SetActorRotation(NewRot);
+				}
+			}
+		}
+	}
+	// ② 攻撃中など：足が止まっている状態
+	else
+	{
+		MoveInput = DesiredMoveDirection;
+
+		// ロックオンしている場合は優先してターゲット先に向きを変える
+		if (auto Target = LockedOnTarget.Get())
+		{
+			const FRotator CurrentRot = GetActorRotation();
+			const FVector DirectionToTarget = (Target->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+			const FRotator TargetRot = FRotator(0.0f, DirectionToTarget.Rotation().Yaw, 0.0f);
+			const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+			SetActorRotation(NewRot);
+		}
+		else
+		{
+			// 足は止まっているが、初動の向き調整ウィンドウが開いている時だけ手動で回す
+			// 即座に回転して良い場合
+			if (bCanInstantRotate)
+			{
+				SetActorRotation(FRotator(0.0f, MoveInput.Rotation().Yaw, 0.0f));
+			}
+			else if (bCanSmoothRotate)
+			{
+				// 滑らかに向きを変える
+				const FRotator CurrentRot = GetActorRotation();
+				const FRotator TargetRot = FRotator(0.0f, MoveInput.Rotation().Yaw, 0.0f);
+				const FRotator NewRot = FMath::RInterpTo(CurrentRot, TargetRot, GetWorld()->GetDeltaSeconds(), TurnAroundSpeed);
+				SetActorRotation(NewRot);
+			}
+		}
+	}
 }
 
 TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()

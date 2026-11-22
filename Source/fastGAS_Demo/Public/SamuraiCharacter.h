@@ -24,6 +24,7 @@ class FASTGAS_DEMO_API ASamuraiCharacter : public ACombatCharacterBase
 public:
 	ASamuraiCharacter();
 
+	void SetDesiredMoveDirection(const FVector& Direction);
 	virtual FVector GetDesiredMoveDirection() const override;
 
 	UFUNCTION(BlueprintCallable, Category="Combat")
@@ -50,7 +51,9 @@ public:
 	void ReleaseSprintInput();
 
 	// void RequestMove(const FVector& WorldDirection, float Scale);
+	// オーバーライドするが移動は親に任せる。回転だけ独自の制御にする
 	virtual void AddMovementInput(FVector WorldDirection, float ScaleValue = 1.0f, bool bForce = false) override;
+	virtual bool IsMoveInputIgnored() const override;
 	void SetLockOnTarget(TWeakObjectPtr<AActor> Target);
 	void LockOff();
 	TWeakObjectPtr<AActor> GetLockedOnTarget();
@@ -68,6 +71,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void Tick(float DeltaTime) override;
 
 	virtual bool GetAttackPoints(FVector& OutStart, FVector& OutEnd)const override;
 
@@ -126,4 +130,6 @@ private:
 	TObjectPtr<AActor> FindDeathblowTarget();
 
 	void ExecDeathblow(TObjectPtr<AActor> Target);
+
+	void UpdateRotate(float DeltaTime);
 };
