@@ -31,6 +31,9 @@ struct FSTE_CombatContextInstanceData
 
 	UPROPERTY(EditAnywhere, Category = "Output")
 	float PostureRatio = 0.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Output")
+	FGameplayTagContainer OwnedTags;
 };
 
 USTRUCT(meta = (DisplayName = "Combat Context Evaluator"))

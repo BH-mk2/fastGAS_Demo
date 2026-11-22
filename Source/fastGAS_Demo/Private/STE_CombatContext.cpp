@@ -1,6 +1,7 @@
 #include "STE_CombatContext.h"
 
 #include "StateTreeExecutionContext.h"
+#include "AbilitySystemComponent.h"
 
 #include "SamuraiCharacter.h"
 #include "CombatPhaseComponent.h"
@@ -10,6 +11,14 @@ void FSTE_CombatContext::TreeStart(FStateTreeExecutionContext& Context) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	UpdateContextData(InstanceData);
+
+	if (InstanceData.OwnerCharacter)
+	{
+		if (auto ASC = InstanceData.OwnerCharacter->GetAbilitySystemComponent())
+		{
+			ASC->GetOwnedGameplayTags(InstanceData.OwnedTags);
+		}
+	}
 }
 
 void FSTE_CombatContext::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
@@ -71,5 +80,7 @@ void FSTE_CombatContext::UpdateContextData(FInstanceDataType& InstanceData) cons
 			const float MaxPosture = AttrSet->GetMaxPosture();
 			InstanceData.PostureRatio = (MaxPosture > 0.0f) ? (AttrSet->GetPosture() / MaxPosture) : 0.0f;
 		}
+
+		ASC->GetOwnedGameplayTags(InstanceData.OwnedTags);
 	}
 }
