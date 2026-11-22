@@ -14,7 +14,7 @@ void ASamuraiAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetOwner()))
+	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(InPawn))
 	{
 		OwnerSamurai->SetLockOnTarget(nullptr);
 	}
@@ -26,7 +26,7 @@ void ASamuraiAIController::SetFocus(AActor* NewFocus, EAIFocusPriority::Type InP
 
 	if (AActor* TargetSamurai = GetFocusActor())
 	{
-		if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetOwner()))
+		if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetPawn()))
 		{
 			OwnerSamurai->SetLockOnTarget(TargetSamurai);
 		}
@@ -34,14 +34,24 @@ void ASamuraiAIController::SetFocus(AActor* NewFocus, EAIFocusPriority::Type InP
 
 }
 
+void ASamuraiAIController::SetCombatFocus(AActor* Target)
+{
+	SetFocus(Target, EAIFocusPriority::Gameplay);
+}
+
 void ASamuraiAIController::ClearFocus(EAIFocusPriority::Type InPriority)
 {
 	Super::ClearFocus(InPriority);
 
-	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetOwner()))
+	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetPawn()))
 	{
-		OwnerSamurai->SetLockOnTarget(nullptr);
+		OwnerSamurai->SetLockOnTarget(GetFocusActor());
 	}
+}
+
+void ASamuraiAIController::ClearCombatFocus()
+{
+	ClearFocus(EAIFocusPriority::Gameplay);
 }
 
 void ASamuraiAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
