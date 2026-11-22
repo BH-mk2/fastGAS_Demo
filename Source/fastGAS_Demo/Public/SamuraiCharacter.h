@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatCharacterBase.h"
+#include "GenericTeamAgentInterface.h"
 #include "SamuraiCharacter.generated.h"
 
 class USpringArmComponent;
@@ -17,7 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardedStateChangedSignature, boo
  * 
  */
 UCLASS()
-class FASTGAS_DEMO_API ASamuraiCharacter : public ACombatCharacterBase
+class FASTGAS_DEMO_API ASamuraiCharacter : public ACombatCharacterBase, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -69,6 +70,7 @@ public:
 	TEnumAsByte<ECollisionChannel> GetWeaponTraceChannel()const { return WeaponTraceChannel; }
 
 protected:
+	virtual FGenericTeamId GetGenericTeamId() const override;
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	virtual void Tick(float DeltaTime) override;

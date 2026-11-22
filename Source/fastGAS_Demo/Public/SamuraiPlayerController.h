@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
 #include "GameplayTagContainer.h"
+#include "GenericTeamAgentInterface.h"
 #include "SamuraiPlayerController.generated.h"
 
 class ASamuraiCharacter;
@@ -18,7 +19,7 @@ class UPlayerCombatComponent;
  * 
  */
 UCLASS()
-class FASTGAS_DEMO_API ASamuraiPlayerController : public APlayerController
+class FASTGAS_DEMO_API ASamuraiPlayerController : public APlayerController, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 	
@@ -31,6 +32,10 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	void SetPlayerInputEnabled(bool bEnabled = false);
+
+	virtual FGenericTeamId GetGenericTeamId() const override {
+		return FGenericTeamId(0); 
+	}
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	bool bAutoInputDisableOnBeginPlay = false;

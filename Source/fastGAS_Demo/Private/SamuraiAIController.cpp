@@ -8,6 +8,7 @@
 ASamuraiAIController::ASamuraiAIController()
 {
 	bStartAILogicOnPossess = true;
+	SetGenericTeamId(FGenericTeamId(1));
 }
 
 void ASamuraiAIController::OnPossess(APawn* InPawn)

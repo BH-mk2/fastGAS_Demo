@@ -111,6 +111,15 @@ void ASamuraiCharacter::RespawnAtCheckpoint()
 	StageSubsystem->ResetStage();
 }
 
+FGenericTeamId ASamuraiCharacter::GetGenericTeamId() const
+{
+	if (const IGenericTeamAgentInterface* ControllerTeamAgent = Cast<IGenericTeamAgentInterface>(GetController()))
+	{
+		return ControllerTeamAgent->GetGenericTeamId();
+	}
+	return FGenericTeamId::NoTeam;
+}
+
 void ASamuraiCharacter::BeginPlay()
 {
 	Super::BeginPlay();
