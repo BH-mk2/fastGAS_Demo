@@ -26,7 +26,7 @@ struct FSTT_ExecuteCombatActionInstanceData
 	FGameplayTag ReleaseEventTag;
 };
 
-USTRUCT(meta = (DisplayName = "Execute Combat Action", Category = "Combat"))
+USTRUCT(meta = (DisplayName = "Execute Combat Action", Category = "SCombat"))
 struct FASTGAS_DEMO_API FSTT_ExecuteCombatAction : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
