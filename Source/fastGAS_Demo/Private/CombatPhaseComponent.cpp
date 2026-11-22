@@ -17,6 +17,14 @@ UCombatPhaseComponent::UCombatPhaseComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+FGameplayTagContainer UCombatPhaseComponent::GetCurrentAllowedAttackTags()
+{
+	if(not PhaseConfigs.IsValidIndex(CurrentPhaseIndex))
+		return FGameplayTagContainer();
+
+	return PhaseConfigs[CurrentPhaseIndex].AllowedAttackTags;
+}
+
 // Called when the game starts
 void UCombatPhaseComponent::BeginPlay()
 {
