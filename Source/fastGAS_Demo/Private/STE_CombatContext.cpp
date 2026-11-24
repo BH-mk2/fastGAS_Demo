@@ -38,6 +38,7 @@ void FSTE_CombatContext::UpdateContextData(FInstanceDataType& InstanceData) cons
 	{
 		InstanceData.TargetActor = nullptr;
 		InstanceData.AngleToTarget = 0.0f;
+		InstanceData.DistanceToTarget = TNumericLimits<float>::Max();
 	}
 	else
 	{
