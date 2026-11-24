@@ -19,11 +19,14 @@ void UGA_Attack::ActivateAbility(
 		return;
 	}
 
+	FName SectionName = FName("Default");
 	if (ComboSectionNames.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[UGA_Attack] ComboSectionNames is Empty."));
-		EndAbility(Handle, ActorInfo, ActivationInfo, true, true);
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("[UGA_Attack] ComboSectionNames is Empty. use Default."));
+	}
+	else
+	{
+		SectionName = ComboSectionNames[0];
 	}
 
 	UAbilityTask_PlayMontageAndWait* MontageTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(
@@ -31,7 +34,7 @@ void UGA_Attack::ActivateAbility(
 		NAME_None,
 		AttackMontage,
 		PlayRate,
-		ComboSectionNames[0]
+		SectionName
 	);
 
 	if (!MontageTask)
