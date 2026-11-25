@@ -25,6 +25,7 @@ class FASTGAS_DEMO_API ASamuraiCharacter : public ACombatCharacterBase, public I
 public:
 	ASamuraiCharacter();
 
+	UFUNCTION(BlueprintCallable)
 	void SetDesiredMoveDirection(const FVector& Direction);
 	virtual FVector GetDesiredMoveDirection() const override;
 
@@ -57,7 +58,8 @@ public:
 	virtual bool IsMoveInputIgnored() const override;
 	void SetLockOnTarget(TWeakObjectPtr<AActor> Target);
 	void LockOff();
-	TWeakObjectPtr<AActor> GetLockedOnTarget();
+	UFUNCTION(BlueprintPure, Category = "Combat")
+	AActor* GetLockedOnTarget() const { return LockedOnTarget.Get(); }
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StartGuard();
 	UFUNCTION(BlueprintCallable, Category = "Combat")

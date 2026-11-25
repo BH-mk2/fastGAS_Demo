@@ -115,7 +115,7 @@ void ASamuraiPlayerController::PlayerTick(float DeltaTime)
 	ASamuraiCharacter* Samurai = Cast<ASamuraiCharacter>(GetPawn());
 	if (!Samurai) return;
 
-	if (AActor* Target = Samurai->GetLockedOnTarget().Get())
+	if (AActor* Target = Samurai->GetLockedOnTarget())
 	{
 		const FVector CameraLocation = PlayerCameraManager->GetCameraLocation();
 		const FVector TargetLocation = Target->GetActorLocation();

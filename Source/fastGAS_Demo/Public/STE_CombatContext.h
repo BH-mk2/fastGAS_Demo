@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "StateTreeEvaluatorBase.h"
+#include "SamuraiCharacter.h"
 #include "STE_CombatContext.generated.h"
 
 class ASamuraiCharacter;

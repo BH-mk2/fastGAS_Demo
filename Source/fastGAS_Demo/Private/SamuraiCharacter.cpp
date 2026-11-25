@@ -596,11 +596,6 @@ void ASamuraiCharacter::UpdateRotate(float DeltaTime)
 	}
 }
 
-TWeakObjectPtr<AActor> ASamuraiCharacter::GetLockedOnTarget()
-{
-	return LockedOnTarget;
-}
-
 void ASamuraiCharacter::StartGuard()
 {
 	TriggerAction(CombatGameplayTags::CGTAG_ABILITY_Action_Guard);
