@@ -42,6 +42,8 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_SmoothWindow, "State.Rotation.SmoothWindow");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Rotation_InstantWindow, "State.Rotation.InstantWindow");
 
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_STATE_Phase, "State.Phase");
+
 	// データ用
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Health, "Data.Damage.Health");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_DATA_Damage_Posture, "Data.Damage.Posture");
