@@ -18,14 +18,13 @@ public:
 	ASamuraiAIController();
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
-	virtual void SetFocus(AActor* NewFocus, EAIFocusPriority::Type InPriority = EAIFocusPriority::Gameplay) override;
+	virtual void OnUnPossess() override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetCombatFocus(AActor* Target);
 
-	virtual void ClearFocus(EAIFocusPriority::Type InPriority) override;
 	UFUNCTION(BlueprintCallable)
-	virtual void ClearCombatFocus();
+	virtual void ClearCombatFocus(AActor* ForgottenActor);
 
 	virtual void UpdateControlRotation(float DeltaTime, bool bUpdatePawn = true) override;
 };

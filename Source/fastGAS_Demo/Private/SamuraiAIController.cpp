@@ -21,41 +21,38 @@ void ASamuraiAIController::OnPossess(APawn* InPawn)
 	}
 }
 
-void ASamuraiAIController::SetFocus(AActor* NewFocus, EAIFocusPriority::Type InPriority)
+void ASamuraiAIController::OnUnPossess()
 {
-	Super::SetFocus(NewFocus, InPriority);
-
-	if (AActor* TargetSamurai = GetFocusActor())
-	{
-		if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetPawn()))
-		{
-			OwnerSamurai->SetLockOnTarget(TargetSamurai);
-		}
-	}
-
+	Super::OnUnPossess();
 }
 
 void ASamuraiAIController::SetCombatFocus(AActor* Target)
 {
-	SetFocus(Target, EAIFocusPriority::Gameplay);
-}
-
-void ASamuraiAIController::ClearFocus(EAIFocusPriority::Type InPriority)
-{
-	Super::ClearFocus(InPriority);
-
 	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetPawn()))
 	{
-		OwnerSamurai->SetLockOnTarget(GetFocusActor());
+		OwnerSamurai->SetLockOnTarget(Target);
 	}
 }
 
-void ASamuraiAIController::ClearCombatFocus()
+void ASamuraiAIController::ClearCombatFocus(AActor* ForgottenActor)
 {
-	ClearFocus(EAIFocusPriority::Gameplay);
+	if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetPawn()))
+	{
+		if (ForgottenActor && ForgottenActor != OwnerSamurai->GetLockedOnTarget())
+		{
+			return;
+		}
+		OwnerSamurai->SetLockOnTarget(nullptr);
+	}
 }
 
 void ASamuraiAIController::UpdateControlRotation(float DeltaTime, bool bUpdatePawn)
 {
-	// 何もしないことで独自の回転処理を邪魔しないようにする
+	// アクターの独自の回転処理を邪魔しないようにする
+
+	// 視覚の向きは制御する
+	if (APawn* MyPawn = GetPawn())
+	{
+		SetControlRotation(MyPawn->GetActorRotation());
+	}
 }
