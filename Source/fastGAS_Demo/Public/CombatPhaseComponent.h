@@ -68,6 +68,11 @@ private:
 	void EnterStaggeredState(ECombatStaggerReason Reason, const FGameplayEventData* Payload);
 	void OnStaggerRecoveryExpired();
 
+	void AdvanceToNextPhase();
+	UFUNCTION()
+	void OnIncapacitatedTagChanged(FGameplayTag Tag, int32 NewCount);
+	FGameplayEventData CachedDeathblowPayload;
+
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> OwnerASC;
 

@@ -39,38 +39,16 @@ void UCombatPhaseComponent::ConsumeStockByDeathblow(const FGameplayEventData& De
 	if (!OwnerASC || !OwnerAttributeSet)
 		return;
 
-	if (UWorld* World = GetWorld())
+	CachedDeathblowPayload = DeathblowPayload;
+
+	if (OwnerASC->HasMatchingGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Incapacitated))
 	{
-		World->GetTimerManager().ClearTimer(StaggerRecoveryTimerHandle);
+		OwnerASC->RegisterGameplayTagEvent(CombatGameplayTags::CGTAG_STATE_Action_Incapacitated, EGameplayTagEventType::NewOrRemoved)
+			.AddUObject(this, &UCombatPhaseComponent::OnIncapacitatedTagChanged);
+		return;
 	}
-	CurrentStaggerReason = ECombatStaggerReason::None;
-	OwnerASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
 
-	const int32 CurrentStocks = FMath::RoundToInt(OwnerAttributeSet->GetRemainingStocks());
-	if (CurrentStocks > 1)
-	{
-		// ストックを１消費して次のゲージ用にパラメータをセット
-		OwnerAttributeSet->SetRemainingStocks(static_cast<float>(CurrentStocks - 1));
-		OwnerAttributeSet->SetHealth(OwnerAttributeSet->GetMaxHealth());
-		OwnerAttributeSet->SetPosture(0.0f);
-
-		ApplyPhaseConfig(CurrentPhaseIndex + 1, false);
-	}
-	else
-	{
-		// 完全撃破の場合
-		OwnerAttributeSet->SetRemainingStocks(0.0f);
-		OwnerAttributeSet->SetHealth(0.0f);
-
-		FGameplayEventData DeathPayload = DeathblowPayload;
-		DeathPayload.EventTag = CombatGameplayTags::CGTAG_EVENT_Combat_ExecuteDeath;
-
-		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
-			GetOwner(),
-			CombatGameplayTags::CGTAG_EVENT_Combat_ExecuteDeath,
-			DeathPayload
-		);
-	}
+	AdvanceToNextPhase();
 }
 
 const FEnemyPhaseConfig& UCombatPhaseComponent::GetCurrentPhaseConfig() const
@@ -277,4 +255,63 @@ void UCombatPhaseComponent::OnStaggerRecoveryExpired()
 
 	CurrentStaggerReason = ECombatStaggerReason::None;
 	OwnerASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
+}
+
+void UCombatPhaseComponent::AdvanceToNextPhase()
+{
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(StaggerRecoveryTimerHandle);
+	}
+	if (!OwnerASC || !OwnerAttributeSet)
+	{
+		return;
+	}
+
+	CurrentStaggerReason = ECombatStaggerReason::None;
+	OwnerASC->RemoveLooseGameplayTag(CombatGameplayTags::CGTAG_STATE_Action_Staggered);
+
+	const int32 CurrentStocks = FMath::RoundToInt(OwnerAttributeSet->GetRemainingStocks());
+	if (CurrentStocks > 1)
+	{
+		// ストックを１消費して次のゲージ用にパラメータをセット
+		OwnerAttributeSet->SetRemainingStocks(static_cast<float>(CurrentStocks - 1));
+		OwnerAttributeSet->SetHealth(OwnerAttributeSet->GetMaxHealth());
+		OwnerAttributeSet->SetPosture(0.0f);
+
+		ApplyPhaseConfig(CurrentPhaseIndex + 1, false);
+	}
+	else
+	{
+		// 完全撃破の場合
+		OwnerAttributeSet->SetRemainingStocks(0.0f);
+		OwnerAttributeSet->SetHealth(0.0f);
+
+		FGameplayEventData DeathPayload = CachedDeathblowPayload;
+		DeathPayload.EventTag = CombatGameplayTags::CGTAG_EVENT_Combat_ExecuteDeath;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			GetOwner(),
+			CombatGameplayTags::CGTAG_EVENT_Combat_ExecuteDeath,
+			DeathPayload
+		);
+	}
+}
+
+void UCombatPhaseComponent::OnIncapacitatedTagChanged(FGameplayTag Tag, int32 NewCount)
+{
+	if (NewCount == 0)
+	{
+		if (UWorld* World = GetWorld())
+		{
+			TWeakObjectPtr<UCombatPhaseComponent> WeakThis(this);
+			World->GetTimerManager().SetTimerForNextTick([WeakThis]()
+				{
+					if (WeakThis.IsValid())
+					{
+						WeakThis->AdvanceToNextPhase();
+					}
+				});
+		}
+	}
 }
