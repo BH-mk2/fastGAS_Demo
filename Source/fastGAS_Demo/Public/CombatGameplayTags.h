@@ -17,6 +17,7 @@ namespace CombatGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_HealthBroken);	 // 体力が無くなったときのイベント
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_ExecuteDeath);     // 体力が無くなって死亡を確定させるときのイベント
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_Deathblow_Impact); // 忍殺で攻撃を当てたタイミングのイベント
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_Combat_Executed);		// 忍殺攻撃を受けるときのイベント
 
 	// StateTreeイベント用
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_EVENT_State_Cancellable_Attack); // 攻撃キャンセル可能を通知
@@ -36,6 +37,7 @@ namespace CombatGameplayTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Action_Sprint);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Action_Staggered);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Action_DirectHitReact);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Action_Incapacitated);
 
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(CGTAG_STATE_Combat_LockedOn);
 
