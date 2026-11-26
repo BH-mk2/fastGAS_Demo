@@ -81,8 +81,12 @@ void UDeathblowAction_Standard::Execute_Implementation(ACharacter* Attacker, ACh
 
 	bEffectApplied = false;
 
-	// 1. 位置・向きの同期（現在 GA_Deathblow に書いている位置合わせ処理があればここへ移植）
-	const FVector TargetLocation = Victim->GetActorLocation() + Victim->GetActorForwardVector() * FrontDistance;
+	// 1. 位置・向きの同期
+	const bool bIsFront = 0.0f < FVector::DotProduct(
+		Victim->GetActorForwardVector().GetSafeNormal2D(),
+		(Attacker->GetActorLocation() - Victim->GetActorLocation()).GetSafeNormal2D()
+	);
+	const FVector TargetLocation = Victim->GetActorLocation() + Victim->GetActorForwardVector() * (bIsFront ? FrontDistance : -FrontDistance);
 	Attacker->SetActorLocation(TargetLocation);
 	const FRotator LookAtVictim = (Victim->GetActorLocation() - Attacker->GetActorLocation()).GetSafeNormal2D().Rotation();
 	Attacker->SetActorRotation(LookAtVictim);
