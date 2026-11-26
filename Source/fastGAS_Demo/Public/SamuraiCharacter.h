@@ -65,6 +65,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void StopGuard();
 
+	void SetDeathblowAction(UDeathblowAction* NewAction) { this->DeathblowAction = NewAction; }
 	UDeathblowAction* GetDeathblowAction() { return DeathblowAction; }
 
 	void RespawnAtCheckpoint();
@@ -102,7 +103,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
 	float DeathblowSearchRadius = 100.0f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Deathblow")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Deathblow")
 	TObjectPtr<class UDeathblowAction> DeathblowAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Collision")

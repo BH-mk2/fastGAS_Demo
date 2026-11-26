@@ -8,6 +8,7 @@
 
 #include "CombatGameplayTags.h"
 #include "CombatAttributeSet.h"
+#include "SamuraiCharacter.h"
 
 const FEnemyPhaseConfig UCombatPhaseComponent::DefaultPhaseConfig = FEnemyPhaseConfig();
 
@@ -138,6 +139,15 @@ void UCombatPhaseComponent::ApplyPhaseConfig(int32 NewPhaseIndex, bool bIsInitia
 	if (NewConfig.PhaseAbilitySet)
 	{
 		NewConfig.PhaseAbilitySet->GiveToAbilitySystem(OwnerASC, &CurrentGrantedHandles, GetOwner());
+	}
+
+	// 忍殺アクションの切り替え
+	if (NewConfig.DeathblowAction)
+	{
+		if (ASamuraiCharacter* OwnerSamurai = Cast<ASamuraiCharacter>(GetOwner()))
+		{
+			OwnerSamurai->SetDeathblowAction(NewConfig.DeathblowAction);
+		}
 	}
 
 	if (!bIsInitialSetup)

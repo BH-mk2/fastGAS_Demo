@@ -55,6 +55,10 @@ struct FEnemyPhaseConfig
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase|Combat")
 	FGameplayTagContainer AllowedAttackTags;
 
+	// このフェーズで再生される忍殺時アクション
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Phase|Combat")
+	TObjectPtr<class UDeathblowAction> DeathblowAction;
+
 	// このフェーズにおける体力０・体幹崩れ時の挙動ルール
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Phase|Break")
 	FCombatBreakRule BreakRule;
