@@ -94,7 +94,17 @@ void UDeathblowAction_Standard::Execute_Implementation(ACharacter* Attacker, ACh
 	// 2. 被害者側の演出モンタージュ再生（ある場合）
 	if (VictimMontage)
 	{
-		Victim->PlayAnimMontage(VictimMontage);
+		// Victim->PlayAnimMontage(VictimMontage);
+		FGameplayEventData Payload;
+		Payload.Instigator = Attacker;
+		Payload.Target = Victim;
+		Payload.OptionalObject = VictimMontage;
+
+		UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(
+			Victim,
+			CombatGameplayTags::CGTAG_EVENT_Combat_Executed,
+			Payload
+		);
 	}
 
 	// 3. インパクト通知待ち
