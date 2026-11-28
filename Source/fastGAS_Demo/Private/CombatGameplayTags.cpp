@@ -71,6 +71,7 @@ namespace CombatGameplayTags
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Dodge, "Ability.Action.Dodge");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Action_Sprint, "Ability.Action.Sprint");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Death, "Ability.Death");
+	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Executed, "Ability.Executed");
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_Stagger, "Ability.Stagger");
 
 	UE_DEFINE_GAMEPLAY_TAG(CGTAG_ABILITY_PhaseTransition, "Ability.PhaseTransition");
