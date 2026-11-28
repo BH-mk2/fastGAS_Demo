@@ -32,6 +32,7 @@ ASamuraiCharacter::ASamuraiCharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
 	GetCharacterMovement()->bEnablePhysicsInteraction = false;
+	GetCharacterMovement()->SetWalkableFloorAngle(50.0f);
 	if (FNavMovementProperties* NavProps = GetCharacterMovement()->GetNavMovementProperties())
 	{
 		NavProps->bUseAccelerationForPaths = true;
