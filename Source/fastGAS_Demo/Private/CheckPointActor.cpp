@@ -26,7 +26,7 @@ ACheckPointActor::ACheckPointActor()
 	RespawnPoint->SetupAttachment(Root);
 }
 
-void ACheckPointActor::ActivateCheckpoint(APawn* PlayerPawn)
+void ACheckPointActor::ActivateCheckpoint(APawn* PlayerPawn, bool bIsReset)
 {
 	if (not IsValid(PlayerPawn))
 	{
@@ -38,18 +38,21 @@ void ACheckPointActor::ActivateCheckpoint(APawn* PlayerPawn)
 	{
 		StageSubsystem->SetRespawnTransform(RespawnPoint->GetComponentTransform());
 
-		// プレイヤーのパラメータを全快
-		if (RestorePlayerGE)
+		if (bIsReset)
 		{
-			if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(PlayerPawn))
+			// プレイヤーのパラメータを全快
+			if (RestorePlayerGE)
 			{
-				FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
-				Context.AddSourceObject(this);
-				ASC->ApplyGameplayEffectToSelf(RestorePlayerGE.GetDefaultObject(), 1.0f, Context);
+				if (UAbilitySystemComponent* ASC = UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(PlayerPawn))
+				{
+					FGameplayEffectContextHandle Context = ASC->MakeEffectContext();
+					Context.AddSourceObject(this);
+					ASC->ApplyGameplayEffectToSelf(RestorePlayerGE.GetDefaultObject(), 1.0f, Context);
+				}
 			}
-		}
 
-		StageSubsystem->ResetStage();
+			StageSubsystem->ResetStage();
+		}
 	}
 }
 

@@ -19,7 +19,7 @@ public:
 	ACheckPointActor();
 
 	UFUNCTION(BlueprintCallable, Category = "Checkpoint")
-	void ActivateCheckpoint(APawn* PlayerPawn);
+	void ActivateCheckpoint(APawn* PlayerPawn, bool bIsReset = true);
 
 protected:
 	// Called when the game starts or when spawned
